@@ -7,85 +7,280 @@ description: Use when frontend work requires deciding code ownership, file place
 
 ## Overview
 
-Frontend directory structures should not be split into only “pages and everything else.” “Everything else” means a state where type-revealing but role-ambiguous folders such as `components`, `hooks`, `models`, `utils`, and `shared` absorb all code. This skill does not exist to force a large architecture. It exists to prevent product policy, API contracts, URL state, and query logic from unconsciously leaking into those leftover directories during implementation.
+Frontend directory structures should not be split into only “pages and everything else.” “Everything else” means a state where type-revealing but role-ambiguous folders such as `components`, `hooks`, `models`, `utils`, and `shared` absorb all code. This skill does not exist to force a large architecture. It exists to prevent product policy, API calls, URL state, and similar logic from unconsciously leaking into inappropriate folders during implementation. The core principle is to observe the actual structure of the current project, classify the role of each folder and file, and preserve the dependency direction appropriate to that role. Do not simply memorize folder names.
 
-Code should be separated by role, dependency constraints, external data boundaries, and orchestration responsibility. Lower-level code must not be made aware of higher-level context. Experienced frontend developers can practice clean code even in a “pages and everything else” structure, but in large teams, large projects, and coding-agent workflows, you cannot assume those principles will hold automatically.
+Code should be separated into layers by role, dependency, external data boundary, and orchestration responsibility. Lower-level code must not be made aware of higher-level context. Experienced frontend developers can practice clean code even in a “pages and everything else” structure, but in large teams, large projects, and coding-agent workflows, you cannot assume those principles will hold automatically.
 
 This skill does not enforce a specific methodology such as Feature-Sliced Design or Vertical Slice Architecture. Type-based, feature-based, domain-driven, and other directory structures can all be valid. What matters is whether roles and dependency direction are clear within the structure the project has chosen, whether external data contracts are isolated, and whether code responsibilities and frontend-owned domain logic are managed effectively.
 
 ## When to Use
 
-Use when:
+Use this skill when:
 
 - Implementing or modifying frontend features
-- Deciding where to put a new file
-- Deciding ownership for a component, hook, utility, API client, query, store, schema, mapper, or feature logic
-- Extracting or moving code
+- Creating a new file or moving an existing file
+- Extracting existing code into a new file
+- Deciding where an implementation or piece of logic should live
 - Adding imports or judging dependency direction
 - Designing the structure of a new frontend project
 
 You do not need to use it when:
 
-- You are only changing a small piece of copy or styling inside an already-correct file, and file placement, extraction, and import direction do not change
+- You are only changing a small piece of copy or styling inside an already-correct file, and file placement, extraction, import paths, and dependencies do not change
 
-## Abstract Layer Language
+## Abstract Layers
 
-If the project already uses layer terminology, prefer the project’s terminology. Use the following terms only when there is no existing terminology or when the structure needs to be explained.
+If the project already uses layer terminology, prefer the project’s terminology. Use the following terms only when there is no existing layer terminology, or when the structure needs to be explained.
 
 | Layer | Meaning |
 | --- | --- |
-| Delivery | Screens delivered to users. The highest-level code, such as pages and routes. |
-| Domain | Reusable code that contains product context, such as feature flags, display policy, and validation. |
-| Foundation | Pure foundation code. The lowest-level code that knows no external context. |
-| Data | External data contracts. Most API-related code. |
+| Application | Screens delivered to users. The highest-level layer, such as pages and routes. |
+| Domain | Reusable business rules such as product policy and feature flags. This layer understands business requirements and context, but remains pure and does not depend on external services. |
+| Foundation | Pure code that knows no external context. This is the lowest-level layer. |
+| Data | External data contracts. API-related code belongs here, and unlike the other three layers, it is treated as external code. |
 
-These abstract layers are the minimum units for designing a sound frontend structure. This means at least four concepts are needed; real projects may split them further.
+These abstract layers are the minimum units for designing a sound frontend structure. Real projects may split them further, but this means at least four concepts are needed. These are abstract layers, so they do not force actual project folder names.
 
-Because these are abstract layers, the names are not forced as folder names. Whether a dependency is valid depends not only on the abstract layer, but also on directory role, code responsibility, and dependency type. For example, in some projects both `features` and `widgets` are Domain-layer directories. However, if `features` contains feature policy code and `widgets` contains UI components, then it may be the wrong direction for feature policy code to know about UI component roles.
+### Abstract Layers and Dependencies
+
+The dependency direction between abstract layers flows Application → Domain → Foundation. However, whether a dependency is valid depends not only on the abstract layer, but also on responsibility and role. For example, in some projects both `features` and `widgets` may be Domain-layer folders. But if `features` contains only policy code and `widgets` contains UI components, then it may be the wrong dependency for `features` to depend on `widgets`.
 
 ### Misunderstanding the Foundation Layer
 
-Foundation is not determined by “no domain words.” It is determined by code-level independence. In practice, product requirements are expressed through UI design, and a generic component that only receives props can still exist. Even if it expresses product concepts, code can be Foundation-like when it does not directly depend on APIs, queries, stores, routers, form state, and instead receives the required values by injection. Conversely, even if a name sounds generic, it is not Foundation if it directly knows external data or domain decisions.
+Foundation is not determined by “no domain words.” It is determined by code-level independence. Even when code expresses concepts used by the product and its target market, it can be considered Foundation if it does not directly depend on APIs, queries, stores, routers, form state, and instead receives required values by injection. Conversely, even if a name sounds generic, it is not Foundation if it directly knows external data or domain policy.
 
 ### Data Layer Exceptions
 
-The Data layer is generally not controlled by the frontend. It may be generated from an OpenAPI spec or written manually, but either way the frontend consumes it. Therefore, Data-layer code is treated as external contract code not owned by the frontend, even when frontend developers wrote it directly. Whether it is generated from OpenAPI or manually written, API clients, generated DTOs, and external schemas should not be mixed with frontend-owned code.
+The Data layer is generally not a frontend responsibility. Whether the code was generated from an OpenAPI spec, written manually, or decided together with the backend team, the frontend consumes it at the code level. Therefore, API clients and schemas are treated as external contract code that should not be mixed with frontend-owned code, even when frontend developers wrote them directly.
 
-The Data layer also has different dependency direction. The default direction for abstract layers is Delivery → Domain → Foundation, but Data-layer dependencies depend on project design, project rules, or team decisions. For example, if the project allows Foundation-layer components to express domains through UI design, then API calls may be forbidden while API schemas may be referenced. As another example, analytics and error collection may be defined as cross-cutting concerns and handled in the Foundation layer. These are examples only. Do not implicitly allow them; first check project rules and existing structure.
+The Data layer also has different dependency direction. The default direction for abstract layers is Application → Domain → Foundation, but Data-layer dependencies depend on project and team design rules. For example, if a project allows Foundation-layer components to express domain context through UI design, API calls may still be forbidden while API schema references are allowed. As another example, analytics and error collection may be treated as cross-cutting concerns and inserted directly into the Foundation layer. These are examples only. Do not implicitly allow them; first check project rules and existing structure.
 
 ## Decision Procedure
 
-### Before Making an Implementation Plan
+### When to Stop
 
-Check the following before planning implementation:
+Immediately before any of the following frontend changes, stop and check roles and boundaries. Do not skip this just because the user did not ask about structure or because the change looks small.
 
-1. Are there explicit rules in `AGENTS.md`, `CLAUDE.md`, `README.md`, architecture docs, current directory structure, or import conventions?
-2. Which layer is this code closest to? (Delivery, Domain, Foundation, Data)
+- Planning implementation, reviewing code, or evaluating the user’s suggestion/instruction
+- Writing new code
+- Creating, moving, or renaming files
+- Extracting part of an existing file
+- Adding a new import or changing an import path
+
+This checkpoint does not mean you must always explain structure at length to the user. If there is no problem, apply it silently and continue. Only when a boundary may be broken should you briefly state the reason and the safe alternative.
+
+### What to Check
+
+After stopping, check the following:
+
+1. Are there explicit rules in `AGENTS.md`, `CLAUDE.md`, `README.md`, architecture docs, the current directory structure, or lint rules?
+2. Which layer is this code closest to? (Application, Domain, Foundation, Data)
 3. What role does this code have? (API, UI, Policy, Utility, etc.)
 4. Even within the same abstract layer, are there role-based dependency directions that should be disallowed?
-5. If rules already exist, what placement respects those rules while avoiding worse dependency direction within the current scope?
+5. If this code is placed in a lower-level role folder, will that folder learn higher-level context?
+6. Are external data contracts and frontend-owned policy mixed in the same file or code?
+7. Is this code being placed in `components`, `hooks`, `models`, `utils`, `shared`, or a similar location only because it is reusable?
+8. If rules already exist, what placement respects those rules while avoiding worse dependency direction within the current scope?
 
-### Immediately Before Creating Files, Extracting Code, or Adding Imports
+In existing projects, do not force a large structural change. Improve only around the code you touch, and if you notice a larger structural problem, mention it only briefly and lightly.
 
-Check again immediately before placing code or adding dependencies:
+## Role Classification and Placement Criteria
 
-1. If this code is placed in a lower-level role folder, will that folder learn higher-level context?
-2. Are external data contracts and frontend-owned policy mixed in the same file or public API?
-3. Is the code being placed in a low-level shared directory such as `components`, `hooks`, `models`, `utils`, or `shared` merely because it is reusable?
-4. Are external data access, URL state, DTO mapping, and product policy bundled into one abstraction that blurs layer boundaries?
-5. Even if using only `import type`, does the lower layer’s type surface expose an external contract?
+Folder names are conventions or rules, not actual roles. Do not judge layers by folder names alone. First inspect project rules and actual usage, then infer the layer and role from observed responsibility.
 
-In existing projects, do not force a large structural change. Improve narrowly around the code you touch, and if you notice a larger structural problem, mention it only as a short, lightweight suggestion.
+The following are examples. Each layer may contain more responsibilities or roles.
 
-## Placement Rules
+| Observed responsibility example | Role | Layer |
+| --- | --- | --- |
+| Page UI, route configuration, URL state subscription, navigation control | UI presentation and feature delivery | Application |
+| Independently functioning feature UI, such as `<NewArrivalsSection shopId={shopId} />` or `<AuthorizationDialog onComplete={onComplete} />` | UI presentation and feature delivery | Domain |
+| Product policy and feature flags, such as `canBuyProduct(product)` or `isBetaEnabled(user)` | Reusable business logic | Domain |
+| Components that render UI only from props and do not directly read external data | UI presentation and interaction | Foundation |
+| Components that render UI only from props but directly express business requirements in code | UI presentation and interaction | Domain |
+| Utility functions/modules, browser API wrappers | Reusable utilities | Foundation |
+| API endpoint calls, API schemas, Query/Mutation Options | External data contracts and execution | Data |
 
-| Situation | Place it in (alternatives) |
-| --- | --- |
-| Pages, route configuration | Delivery |
-| Product policy, display rules, validation | Domain (Delivery) |
-| Pure UI components | Foundation |
-| API clients, API schemas | Data |
-| Mapping DTOs into screen models | Data if the goal is reducing coupling to the API; Domain or Delivery if it composes data according to policy or for specific UI rendering |
+## Default Choices When Ambiguous
+
+- Keep code next to its caller. If there are multiple callers, place it in the layer of the nearest caller. Hidden dependencies are more dangerous than longer caller code, so placing code in a lower layer requires stronger justification.
+- Unless the user explicitly instructs that a component should take on a higher-layer role, or unless there is a requirement for it to work independently, treat it as generic UI. In that case, pass data through props.
+- If the existing structure is polluted, do not choose a large structural change. Pick the smallest placement that avoids adding new pollution in the current change. Still mention the pollution to the user, even briefly.
+
+## Unconscious Leak Examples
+
+### Example 1: API Calls Inside a Foundation Component
+
+Bad:
+
+```tsx
+// shared/ProductCard.tsx
+function ProductCard({ productId }: { productId: string }) {
+  const { data } = useQuery(productSummaryQueryOptions(productId));
+  return <Card>{data.name}</Card>;
+}
+```
+
+Why it is bad:
+
+- A reusable UI component takes on API calling responsibility.
+- Every consumer of this component becomes dependent on the API.
+
+Safer approach:
+
+```tsx
+// shared/ProductCard.tsx
+function ProductCard({ name }: { name: string }) {
+  return <Card>{name}</Card>;
+}
+```
+
+- Fetch data in the Domain layer or above.
+- Pass only display values into Foundation-layer components.
+
+### Example 2: Inlining Product Policy into the Foundation Layer
+
+Bad:
+
+```tsx
+// shared/ProductCard.tsx
+function ProductCard({ product }: { product: ProductSummary }) {
+  const canBuy = product.status === "ACTIVE" && product.stock > 0;
+  return <Button disabled={!canBuy}>Buy</Button>;
+}
+```
+
+Or:
+
+```ts
+// shared/canBuyProduct.ts
+function canBuyProduct(product: ProductSummary) {
+  return product.status === "ACTIVE" && product.stock > 0;
+}
+```
+
+Why it is bad:
+
+- An implementation that should remain pure directly calculates the product policy for purchase eligibility.
+
+Safer approach:
+
+```tsx
+// domain/canBuyProduct.ts
+function canBuyProduct(product: ProductSummary) {
+  return product.status === "ACTIVE" && product.stock > 0;
+}
+
+// shared/ProductCard.tsx
+function ProductCard({ disabled }: { disabled: boolean }) {
+  return <Button disabled={disabled} />;
+}
+
+<ProductCard disabled={!canBuyProduct(product)} />;
+```
+
+- Calculate product policy in the Domain layer.
+- Pass only display values into Foundation-layer components.
+
+### Example 3: Foundation Component Depends on API Schemas
+
+Bad:
+
+```tsx
+// shared/ProductCard.tsx
+function ProductCard({ outOfStock, stock }: Partial<ProductSummary, "outOfStock"> | Partial<ProductDetail, "stock">) {
+  const soldout = outOfStock || stock < 0;
+  return <Tag>{soldout ? "Sold Out" : "In Stock"}</Tag>;
+}
+
+<ProductCard {...productSummary} />
+<ProductCard {...productDetail} />
+```
+
+Why it is bad:
+
+- The component is strongly affected by API schema changes.
+- If higher-level consumers have different API responses, the props must keep expanding.
+
+Safer approach:
+
+```tsx
+// shared/ProductCard.tsx
+function ProductCard({ soldout }: { soldout: boolean }) {
+  return <Card>{soldout ? "Sold Out" : "In Stock"}</Card>;
+}
+
+<ProductCard soldout={productSummary.outOfStock} />
+<ProductCard soldout={productDetail.stock < 0} />
+```
+
+If you want to reduce duplication:
+
+```tsx
+// domain/toProductCardProps.ts
+function toProductCardPropsFromProductDetail(product: ProductDetail) {
+  return { soldout: product.stock < 0 };
+}
+
+<ProductCard {...toProductCardPropsFromProductDetail(productDetail)} />;
+```
+
+- Calculate values per API schema, and pass only display values into the component.
+- If you want to reduce duplication, create conversion functions per API schema.
+
+### Example 4: Hiding the Whole Flow Inside a React Custom Hook
+
+Bad:
+
+```ts
+// shared/useProductEditor.ts
+function useProductEditor() {
+  const { productId } = useParams();
+  const form = useForm();
+  const mutation = useMutation(updateProductMutationOptions());
+  const save = useCallback(() => {
+    mutation.mutate({ productId, ...form.getValues() });
+  }, [form, mutation]);
+
+  // Logic that blocks leaving the page while the form is dirty
+  // `useBlocker()`, `useBeforeUnload()`, etc.
+
+  return { form, save };
+}
+```
+
+Why it is bad:
+
+- Too many responsibilities and dependencies were assigned while writing everything inside a custom hook.
+- Logic is trapped inside the custom hook, creating hidden dependencies and preventing the component from controlling the flow directly.
+- Reusing this kind of custom hook can cause serious flow-control problems.
+
+Safer approach:
+
+```tsx
+// shared/useNavigationBlocker.ts
+type UseNavigationBlockerOptions = { shouldBlock: boolean; confirm: () => Promise<boolean>; onProceed: () => void };
+function useNavigationBlocker({ shouldBlock, confirm, onProceed }: UseNavigationBlockerOptions) {
+  // ...
+}
+
+// pages/ProductEditor.tsx
+function ProductEditor() {
+  const { productId } = useParams();
+  const { formState: { isDirty } } = useForm();
+  const { mutate: save } = useMutation(updateProductMutationOptions());
+
+  useNavigationBlocker({
+    shouldBlock: isDirty,
+    confirm: Dialog.confirm,
+    onProceed: () => {/* ... */},
+  });
+
+  return <form>{/* ... */}</form>;
+}
+```
+
+- Move dependencies that the component should own back into the component. When product requirements change, the component can control the flow directly.
+- Refactor according to the remaining responsibility of the custom hook.
 
 ## Attitude in Existing Codebases
 
@@ -102,7 +297,7 @@ Stop and reconsider placement and dependency direction when you see bad signals:
 - Code with different roles is mixed in the same folder or file only because it is convenient
 - External data contracts and frontend-owned code are mixed in the same folder or file
 - Lower-level roles such as generic UI components, utilities, or shared modules directly perform or encode higher-level context such as page flow, routing, form control, API calls, store access, query/data fetching, external data contracts, product policy, or business rules
-- You assume it is acceptable to access a higher layer’s interface because the import is type-only
+- You assume type-only imports make higher-layer interface access acceptable
 - A small or quick change is used to justify worsening dependency direction or skipping ownership checks
 
 Minimum line to hold under pressure:
@@ -114,13 +309,11 @@ Do not create noise in existing team projects. If a structural change seems nece
 
 ## New Project Default
 
-If the codebase does not exist yet and the user has not specified preferences or a particular directory structure, you MUST read [`greenfield.md`](./greenfield.md) before responding or proposing a structure. Do not propose a new project directory structure without reading that file. This prerequisite applies regardless of the output format (conversation, documentation, or code).
+If there is no existing frontend structure and the user has not specified one, read [`greenfield.md`](./greenfield.md) before proposing directories.
 
-That file is an onboarding document for configuring new projects. It contains the minimum directory structure, role and dependency relationships, and `eslint-plugin-boundaries` automation guide for an ideal frontend architecture. Therefore, when there are no user preferences or explicit instructions, follow the design sequence and directory structure for the selected options exactly as written in that file. Because this is actual layer design, the earlier principle that “folder names are not forced” does not apply.
+If the user specifies a structure, follow that structure first, but verify whether it satisfies the intent of this skill: domain abstraction, isolated external data contracts, and valid dependency direction.
 
-If the user instructs a specific directory structure, follow that structure first, but verify whether it satisfies the intent of this skill: adding a domain abstraction layer, isolating external data contracts, and preserving correct layer dependency direction. If not, propose improvements.
-
-In existing codebases, do not reference that file or introduce a new directory structure or `eslint-plugin-boundaries` unless the user asks.
+In existing codebases, ignore `greenfield.md` and do not introduce new structure unless the user asks.
 
 ## Common Mistakes
 
@@ -131,8 +324,7 @@ In existing codebases, do not reference that file or introduce a new directory s
 | Assuming code in the same abstract layer may freely reference each other | Distinguish dependency direction by implementation role and responsibility even within the same layer. |
 | Moving pure UI upward only because it contains domain words | Check project rules and whether the code-level dependencies are pure. |
 | Treating product decisions as pure UI concerns because they affect rendering | Keep pure UI props-based; compute product decisions in a higher-level or domain-appropriate role and pass display state down. |
-| Treating reuse as a reason to move data access into UI | Reuse does not make data access a Foundation responsibility. Fetch in an appropriate higher-level or data-access role and pass data into pure UI. |
-| Assuming `import type` makes upward access acceptable | Ask whether it would also be acceptable to declare the type in the lower layer and make the higher layer depend on it. |
+| Assuming `import type` permits dependencies on a higher layer | Ask whether it would also be acceptable to declare the type in the lower layer and make the higher layer depend on it. |
 | Strongly demanding a large structural change in an existing project | Improve within the scope of the work, and mention bigger issues lightly. |
 
 ## Quick Decision Table
