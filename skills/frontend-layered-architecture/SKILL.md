@@ -28,9 +28,19 @@ You do not need to use it when:
 
 - You are only changing a small piece of copy or styling inside an already-correct file, and file placement, extraction, import paths, and dependencies do not change
 
+## Mandatory Greenfield Routing
+
+If this skill is used for a new frontend project and no frontend directory/layer structure has been chosen yet, read [`greenfield.md`](./greenfield.md) before asking any architecture question or proposing anything.
+
+Framework, language, build tool, and library choices such as React, TypeScript, or Vite do not count as a frontend directory/layer structure.
+
+`greenfield.md` owns the first user-facing architecture question. Do not invent a preliminary structure-choice question before reading it.
+
+If this skill is used to write or update architecture documentation for a greenfield flow, read [`writing-docs.md`](./writing-docs.md) before writing. If the approved concrete directory structure is not present in the current context, read [`greenfield-propose.md`](./greenfield-propose.md) before writing or ask for the approved structure.
+
 ## Abstract Layers
 
-If the project already uses layer terminology, prefer the project’s terminology. Use the following terms only when there is no existing layer terminology, or when the structure needs to be explained.
+If the project already uses layer terminology, prefer the project’s terminology. Use the following terms only when there is no existing layer terminology, or when the structure needs to be explained. These abstract layer names are not default directory names; do not convert Application, Domain, Foundation, or Data into folders unless the user explicitly selected those names.
 
 ```mermaid
 flowchart TB
@@ -315,11 +325,9 @@ Minimum line to hold under pressure:
 
 Do not create noise in existing team projects. If a structural change seems necessary but is not directly related to the current work, mention it only briefly.
 
-## New Project Default
+## Non-Greenfield Cases
 
-If there is no existing frontend structure and the user has not specified one, read [`greenfield.md`](./greenfield.md) before proposing directories.
-
-If the user specifies a structure, follow that structure first, but verify whether it satisfies the intent of this skill: domain abstraction, isolated external data contracts, and valid dependency direction.
+If the user specifies a frontend directory/layer structure, follow that structure first, but verify whether it satisfies the intent of this skill: domain abstraction, isolated external data contracts, and valid dependency direction.
 
 In existing codebases, ignore `greenfield.md` and do not introduce new structure unless the user asks.
 
@@ -341,7 +349,7 @@ In existing codebases, ignore `greenfield.md` and do not introduce new structure
 | --- | --- |
 | Project rules exist | Follow them. |
 | Existing project with unclear rules | Preserve existing structure, but do not worsen dependency direction. |
-| New project with no preferences or instructions | Before responding or proposing structure, read [`greenfield.md`](./greenfield.md) and follow its design sequence and directory structure. |
+| New project with no chosen directory/layer structure | Before responding, read [`greenfield.md`](./greenfield.md) and follow its step routing. |
 | Adding a feature to an existing type-based structure | Do not scatter it flatly at the root; group it narrowly by feature namespace or prefix at minimum. |
 | A lower-level UI, utility, or shared role starts reading external data or product policy | Stop and check ownership. Prefer props-based UI plus policy or data-access logic in an appropriate higher-level role. |
 | File placement or import direction is ambiguous | Judge by the context the code directly depends on, not by reusability. |
