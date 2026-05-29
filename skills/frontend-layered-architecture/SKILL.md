@@ -32,6 +32,14 @@ You do not need to use it when:
 
 If the project already uses layer terminology, prefer the project’s terminology. Use the following terms only when there is no existing layer terminology, or when the structure needs to be explained.
 
+```mermaid
+flowchart TB
+  Application --> Domain
+  Domain --> Foundation
+  Application --> Data
+  Domain -. schemas/types only .-> Data
+```
+
 | Layer | Meaning |
 | --- | --- |
 | Application | Screens delivered to users. The highest-level layer, such as pages and routes, where UI flow, data fetching, and orchestration are handled. |
