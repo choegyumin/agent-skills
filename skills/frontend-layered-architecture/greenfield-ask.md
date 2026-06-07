@@ -21,7 +21,7 @@ Options:
 
 Ask which repository entry points the project should use for REST API access and query client integration, such as TanStack Query.
 
-Here, Repository means a Data-layer access boundary, not the Repository Class pattern.
+Here, Repository means a Data layer access boundary, not the Repository Class pattern.
 
 Options:
 

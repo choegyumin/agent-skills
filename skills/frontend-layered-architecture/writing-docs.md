@@ -38,10 +38,10 @@ src/
   pages/     # Screen-level UI orchestration
   widgets/   # Standalone feature UI orchestration
   parts/     # Domain-aware UI presentation
-  ui/        # Generic UI presentation
+  ui/        # General-purpose UI presentation
 
   features/  # Reusable business rules, similar to Clean Architecture entities/use-cases
-  utils/     # Generic utility logic
+  utils/     # General-purpose utility logic
 
   api/       # API client and endpoint functions
   repos/     # Data access adapter layer that limits the impact of external API changes
@@ -51,7 +51,7 @@ src/
 
 ```mermaid
 flowchart TB
-  subgraph Application
+  subgraph End-User
     direction TB
     pages[pages]
     widgets[widgets]
@@ -65,7 +65,7 @@ flowchart TB
     parts --> features
   end
 
-  subgraph Foundation
+  subgraph Shared
     direction TB
     ui[ui]
     utils[utils]
@@ -79,15 +79,15 @@ flowchart TB
     repos --> api
   end
 
-  Application --> Domain
-  Domain --> Foundation
-  Application --> Data
+  End-User --> Domain
+  Domain --> Shared
+  End-User --> Data
   Domain -. schemas/types only .-> Data
 ```
 
 - The default import direction outside the Data layer is `pages -> widgets -> parts -> features -> ui -> utils`. Reverse imports are forbidden.
-- `pages` and `widgets` may use Data-layer execution code.
-- `parts` and `features` may use only Data-layer schema/type code.
+- `pages` and `widgets` may use Data layer execution code.
+- `parts` and `features` may use only Data layer schema/type code.
 - Inside the Data layer, imports flow from `repos` to `api`.
 ````
 

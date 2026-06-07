@@ -40,38 +40,38 @@ If this skill is used to write or update architecture documentation for a greenf
 
 ## Abstract Layers
 
-If the project already uses layer terminology, prefer the project’s terminology. Use the following terms only when there is no existing layer terminology, or when the structure needs to be explained. These abstract layer names are not default directory names; do not convert Application, Domain, Foundation, or Data into folders unless the user explicitly selected those names.
+If the project already uses layer terminology, prefer the project’s terminology. Use the following terms only when there is no existing layer terminology, or when the structure needs to be explained. These abstract layer names are not default directory names; do not convert End-User, Domain, Shared, or Data into folders unless the user explicitly selected those names.
 
 ```mermaid
 flowchart TB
-  Application --> Domain
-  Domain --> Foundation
-  Application --> Data
+  End-User --> Domain
+  Domain --> Shared
+  End-User --> Data
   Domain -. schemas/types only .-> Data
 ```
 
 | Layer | Meaning |
 | --- | --- |
-| Application | Screens delivered to users. The highest-level layer, such as pages and routes, where UI flow, data fetching, and orchestration are handled. |
+| End-User | Screens delivered to users. The highest-level layer, such as pages and routes, where UI flow, data fetching, and orchestration are handled. |
 | Domain | Reusable business rules, similar to Clean Architecture Entities and Use Cases. It covers product policy, validation, calculations, and feature flags, while excluding API calls and external service access. |
-| Foundation | Pure code that knows no external context. This is the lowest-level layer. |
+| Shared | Pure code that knows no external context. This is the lowest-level layer. |
 | Data | External data contracts. API-related code belongs here, and unlike the other three layers, it is treated as external code. |
 
 These abstract layers are the minimum units for designing a sound frontend structure. Real projects may split them further, but this means at least four concepts are needed. These are abstract layers, so they do not force actual project folder names.
 
 ### Abstract Layers and Dependencies
 
-The dependency direction between abstract layers flows Application → Domain → Foundation. However, whether a dependency is valid depends not only on the abstract layer, but also on responsibility and role. For example, in some projects both `features` and `widgets` may be Domain-layer folders. But if `features` contains only entities and use cases and `widgets` contains UI components, then it may be the wrong dependency for `features` to depend on `widgets`.
+The dependency direction between abstract layers flows End-User → Domain → Shared. However, whether a dependency is valid depends not only on the abstract layer, but also on responsibility and role. For example, in some projects both `features` and `widgets` may be Domain layer folders. But if `features` contains only entities and use cases and `widgets` contains UI components, then it may be the wrong dependency for `features` to depend on `widgets`.
 
-### Misunderstanding the Foundation Layer
+### Misunderstanding the Shared Layer
 
-Foundation is not determined by “no domain words.” It is determined by code-level independence. Even when code expresses concepts used by the product and its target market, it can be considered Foundation if it does not directly depend on APIs, queries, stores, routers, form state, and instead receives required values by injection. Conversely, even if a name sounds generic, it is not Foundation if it directly knows external data or domain policy.
+Shared is not determined by “no domain words.” It is determined by code-level independence. Even when code expresses concepts used by the product and its target market, it can be considered Shared if it does not directly depend on APIs, queries, stores, routers, form state, and instead receives required values by injection. Conversely, even if a name sounds generic, it is not Shared if it directly knows external data or domain policy.
 
 ### Data Layer Exceptions
 
 The Data layer is generally not a frontend responsibility. Whether the code was generated from an OpenAPI spec, written manually, or decided together with the backend team, the frontend consumes it at the code level. Therefore, API clients and schemas are treated as external contract code that should not be mixed with frontend-owned code, even when frontend developers wrote them directly.
 
-The Data layer also has different dependency direction. The default direction for abstract layers is Application → Domain → Foundation, but Data-layer dependencies depend on project and team design rules. For example, if a project allows Foundation-layer components to express domain context through UI design, API calls may still be forbidden while API schema references are allowed. As another example, analytics and error collection may be treated as cross-cutting concerns and inserted directly into the Foundation layer. These are examples only. Do not implicitly allow them; first check project rules and existing structure.
+The Data layer also has different dependency direction. The default direction for abstract layers is End-User → Domain → Shared, but Data layer dependencies depend on project and team design rules. For example, if a project allows Shared layer components to express domain context through UI design, API calls may still be forbidden while API schema references are allowed. As another example, analytics and error collection may be treated as cross-cutting concerns and inserted directly into the Shared layer. These are examples only. Do not implicitly allow them; first check project rules and existing structure.
 
 ## Decision Procedure
 
@@ -92,7 +92,7 @@ This checkpoint does not mean you must always explain structure at length to the
 After stopping, check the following:
 
 1. Are there explicit rules in `AGENTS.md`, `CLAUDE.md`, `README.md`, architecture docs, the current directory structure, or lint rules?
-2. Which layer is this code closest to? (Application, Domain, Foundation, Data)
+2. Which layer is this code closest to? (End-User, Domain, Shared, Data)
 3. What role does this code have? (API, UI, Policy, Utility, etc.)
 4. Even within the same abstract layer, are there role-based dependency directions that should be disallowed?
 5. If this code is placed in a lower-level role folder, will that folder learn higher-level context?
@@ -110,12 +110,12 @@ The following are examples. Each layer may contain more responsibilities or role
 
 | Observed responsibility example | Role | Layer |
 | --- | --- | --- |
-| Page UI, route configuration, URL state subscription, navigation control | Screen-level UI orchestration | Application |
-| Independently functioning feature UI, such as `<NewArrivalsSection shopId={shopId} />` or `<AuthorizationDialog onComplete={onComplete} />` | Standalone feature UI orchestration | Application |
+| Page UI, route configuration, URL state subscription, navigation control | Screen-level UI orchestration | End-User |
+| Independently functioning feature UI, such as `<NewArrivalsSection shopId={shopId} />` or `<AuthorizationDialog onComplete={onComplete} />` | Standalone feature UI orchestration | End-User |
 | Product policy, validation, calculations, and feature flags, such as `canBuyProduct(product)` or `isBetaEnabled(user)` | Reusable business rules, similar to Clean Architecture Entities and Use Cases (without API calls and external service access) | Domain |
 | Components that render UI only from props but directly express business requirements in code | Domain-aware UI presentation | Domain |
-| Components that render UI only from props and do not directly read external data | Generic UI presentation | Foundation |
-| Utility functions/modules, browser API wrappers | Generic utility logic | Foundation |
+| Components that render UI only from props and do not directly read external data | Generic UI presentation | Shared |
+| Utility functions/modules, browser API wrappers | Generic utility logic | Shared |
 | API endpoint calls, API schemas, Query/Mutation Options | External data contracts and execution | Data |
 
 ## Default Choices When Ambiguous
@@ -126,7 +126,7 @@ The following are examples. Each layer may contain more responsibilities or role
 
 ## Unconscious Leak Examples
 
-### Example 1: API Calls Inside a Foundation Component
+### Example 1: API Calls Inside a Shared Component
 
 Bad:
 
@@ -153,9 +153,9 @@ function ProductCard({ name }: { name: string }) {
 ```
 
 - Fetch data in the Domain layer or above.
-- Pass only display values into Foundation-layer components.
+- Pass only display values into Shared layer components.
 
-### Example 2: Inlining Product Policy into the Foundation Layer
+### Example 2: Inlining Product Policy into the Shared Layer
 
 Bad:
 
@@ -197,9 +197,9 @@ function ProductCard({ disabled }: { disabled: boolean }) {
 ```
 
 - Calculate product policy in the Domain layer.
-- Pass only display values into Foundation-layer components.
+- Pass only display values into Shared layer components.
 
-### Example 3: Foundation Component Depends on API Schemas
+### Example 3: Shared Component Depends on API Schemas
 
 Bad:
 
@@ -340,7 +340,7 @@ In existing codebases, ignore `greenfield.md` and do not introduce new structure
 | Assuming code in the same abstract layer may freely reference each other | Distinguish dependency direction by implementation role and responsibility even within the same layer. |
 | Moving pure UI upward only because it contains domain words | Check project rules and whether the code-level dependencies are pure. |
 | Treating product decisions as pure UI concerns because they affect rendering | Keep pure UI props-based; compute product decisions in a higher-level or domain-appropriate role and pass display state down. |
-| Assuming `import type` permits dependencies on a higher layer | Ask whether it would also be acceptable to declare the type in the lower layer and make the higher layer depend on it. |
+| Assuming `import type` permits dependencies on a higher-layer | Ask whether it would also be acceptable to declare the type in the lower layer and make the higher-layer depend on it. |
 | Strongly demanding a large structural change in an existing project | Improve within the scope of the work, and mention bigger issues lightly. |
 
 ## Quick Decision Table
