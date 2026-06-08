@@ -24,12 +24,17 @@ This checkpoint does not mean you must explain structure at length. If there is 
 4. Even within the same abstract layer, are there role-based dependency directions that should be disallowed?
 5. If this code is placed in a lower-level role folder, will that folder learn higher-level context?
 6. Are external data contracts and frontend-owned business rules mixed in the same file or code?
-7. Is this code being placed in `components`, `hooks`, `models`, `utils`, `shared`, or a similar location only because it is reusable?
-8. If rules already exist, what placement respects those rules while avoiding worse dependency direction within the current scope?
+7. Does any import, including `import type`, cross an invalid dependency direction?
+8. Is this code being placed in `components`, `hooks`, `models`, `utils`, `shared`, or a similar location only because it is reusable?
+9. If rules already exist, what placement respects those rules while avoiding worse dependency direction within the current scope?
 
 ## Role Classification Criteria
 
 Folder names are conventions or rules, not actual roles. Do not judge layers by folder names alone. Inspect project rules and actual usage, then infer the layer and role from observed responsibility.
+
+Start from explicit project rules and approved folder roles. If they exist, map the relevant folders to abstract layers only to check responsibility or dependency violations. Do not override the approved role because current contents are sparse, empty, or polluted; use current contents to find mismatches and the safest local placement.
+
+Configuration files, assets, and other project setup files are not frontend layer nodes. Do not force them into End-User, Domain, Shared, or Data.
 
 | Observed responsibility example | Role | Layer |
 | --- | --- | --- |
@@ -39,12 +44,13 @@ Folder names are conventions or rules, not actual roles. Do not judge layers by 
 | Components that render UI only from props but directly express business requirements in code | Domain-aware UI presentation | Domain |
 | Components that render UI only from props and do not directly read external data | General-purpose UI presentation | Shared |
 | Utility functions/modules, browser API wrappers | General-purpose utility logic | Shared |
-| API endpoint calls, API schemas, Query/Mutation Options | External data contracts and execution | Data |
+| API endpoint calls, API schemas, Query/Mutation Options, content collection query modules | External data contracts and execution | Data |
 
 ## Default Choices When Ambiguous
 
 - Keep code next to its caller. If there are multiple callers, place it in the layer of the nearest caller. Hidden dependencies are more dangerous than longer caller code, so placing code in a lower layer requires stronger justification.
 - Unless the user explicitly instructs that a component should take on a higher-layer role, or unless there is a requirement for it to work independently, treat it as general-purpose UI. In that case, pass data through props.
+- Treat `import type` as a dependency when judging direction. If a lower layer needs a type from a higher layer, ask whether that type actually belongs lower or should be converted at a higher boundary.
 - If the existing structure is polluted, do not choose a large structural change. Pick the smallest placement that avoids adding new pollution in the current change. Still mention the pollution briefly.
 
 ## Existing Codebase Attitude
@@ -65,12 +71,12 @@ Stop and reconsider placement and dependency direction when you see bad signals:
 - Business rules, API contracts, URL state, or query logic are placed where the code looks shared.
 - Code with different roles is mixed in the same folder or file only because it is convenient.
 - External data contracts and frontend-owned code are mixed in the same folder or file.
-- Lower-level roles such as general-purpose UI components, utilities, or shared modules directly perform or encode higher-level context such as page flow, routing, form control, API calls, store access, query/data fetching, external data contracts, or business rules.
+- Lower-level roles such as general-purpose UI components, utilities, hooks, or shared modules directly perform or encode higher-level context such as page flow, routing, form control, API calls, store access, query/data fetching, external data contracts, or business rules.
 - A small or quick change is used to justify worsening dependency direction or skipping ownership checks.
 
 Minimum line to hold under pressure:
 
-- Even under time pressure or when the user asks you not to discuss structure, do not agree to place data fetching, API execution, external data contracts, URL state, form control, or business rules inside a lower-level UI, utility, or shared role.
+- Even under time pressure or when the user asks you not to discuss structure, do not agree to place data fetching, API execution, external data contracts, URL state, form control, orchestration flow, or business rules inside a lower-level UI, utility, hook, or shared role.
 - If the user demands a placement that breaks dependency direction, keep the response short: acknowledge the constraint, reject the invalid dependency, and offer the smallest safe alternative.
 
 ## Quick Decision Table
@@ -80,8 +86,8 @@ Minimum line to hold under pressure:
 | Project rules exist | Follow them. |
 | Existing project with unclear rules | Preserve existing structure, but do not worsen dependency direction. |
 | Adding a feature to an existing type-based structure | Do not scatter it flatly at the root; group it narrowly by feature namespace or prefix at minimum. |
-| A lower-level UI, utility, or shared role starts reading external data or business rules | Stop and check ownership. Prefer props-based UI plus business-rule or data-access logic in an appropriate higher-level role. |
+| A lower-level UI, utility, hook, or shared role starts reading external data or business rules | Stop and check ownership. Prefer props-based UI plus business-rule or data-access logic in an appropriate higher-level role. |
 | File placement or import direction is ambiguous | Judge by the context the code directly depends on, not by reusability. |
 | A large structural change seems necessary | Do not demand it; mention it briefly and lightly. |
 
-If boundary judgment remains uncertain after this process, read `best-practices.md` for examples. Do not use best-practice examples as a template that overrides the current project structure.
+If you still cannot explain the placement or import direction in one sentence using the code’s direct dependencies and responsibility, or if the same code still fits multiple roles, read `best-practices.md` for examples. Do not use those examples as templates or as reasons to override the current project structure.

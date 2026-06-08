@@ -52,7 +52,7 @@ Keep judgment-heavy rules in architecture documentation or code review guidance.
 5. Check current documentation for selected ESLint/plugin syntax before editing.
 6. Encode only approved real directories and import directions.
 7. Do not include directories that were not selected or mapped.
-8. Do not define OpenAPI generated outputs as boundary elements.
+8. Do not define what generated outputs may import; define only which layers may import approved generated-output paths, such as OpenAPI generated outputs.
 9. Run lint after configuration.
 10. If architecture documentation exists, add only a short note that selected rules are tool-enforced. Do not put setup details in the architecture document.
 

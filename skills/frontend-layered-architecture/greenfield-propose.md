@@ -12,10 +12,11 @@ The structure below is the maximum structure when OpenAPI code generation is not
 src/
   pages/
   widgets/
-  parts/
-  ui/
 
+  parts/
   features/
+
+  ui/
   utils/
 
   api/
@@ -46,7 +47,7 @@ Apply selected options before presenting the final proposal:
 | `features` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain | Reusable business rules, validation, calculations, and feature flags. They exclude API calls and external service access. Compose `features` from pure functions, modules, types, and constants. Examples: `canBuyProduct(product)`, `isBetaEnabled(user)`. |
 | `ui` | General-purpose UI presentation | Shared | Pure general-purpose UI components similar to a design system. Examples: `<Button />`, `<Switch />`. |
 | `utils` | General-purpose utility logic | Shared | General-purpose utilities such as pure functions, browser built-in API extensions, and general-purpose React custom hooks. |
-| `api` | Data | Data | External API access layer. |
+| `api` | Data | Data | External API contract/access boundary. |
 | `api/endpoints` | Data | Data | API endpoint functions and API request/response execution boundaries. |
 | `api/schemas` | Data | Data | API Request/Response and DTO types. |
 | `repos` | Data | Data | Data access adapter layer for controlling the impact radius of external API changes. |
@@ -59,6 +60,7 @@ Notes:
 - Think again before adding `widgets`. Most code is sufficiently handled by inlining it in `pages` or abstracting it into `parts` or `ui`. Do not add `widgets` merely to reduce the amount of code needed for reuse.
 - `features` is the layer that best reveals real-world business requirements. It is closest to Clean Architecture Entities and Use Cases in this structure, but it must not directly participate in rendering or external service execution. Delegate rendering to `parts`, and compose `features` from pure functions, modules, types, and constants.
 - `repos` adjusts interfaces so external API changes do not propagate directly to the End-User/Domain layers, and it does not enforce a specific code pattern such as Repository Classes.
+- Treat Data as external contract code consumed by the frontend. It may live inside the repository or be written by frontend developers; that does not change its Data role. For example, OpenAPI-generated clients/schemas and manually written endpoint/schema modules can both be Data.
 
 ## Dependency Rules
 
@@ -79,17 +81,20 @@ Rules:
 
 ## Placement Reference
 
-| Code | Recommended Location |
-| --- | --- |
-| `<NewArrivalsSection shopId={shopId} />` | `widgets/` |
-| `<ProductCard name={product.name} />` | `parts/` |
-| `toProductCardPropsFromProductDetail(product)` | `parts/` |
-| `canBuyProduct(product)` | `features/` |
-| `getProductsAPI()` | `api/endpoints/` |
-| `getProductsAdapter()` | `repos/adapters/` |
-| `productsQueryOptions()` | `repos/queries/` |
-| `toProductFromProductDTO(dto)` | `repos/schemas/` |
-| `formatCurrency(price)` | `utils/` |
+| Example Code | Recommended Location | Placement Cue |
+| --- | --- | --- |
+| `<ProductDetailPage />` | `pages/` |  |
+| `<NewArrivalsSection shopId={shopId} />` | `widgets/` |  |
+| `<ProductCard name={product.name} />` | `parts/` |  |
+| `toAvatarPropsFromUser(user)` | `parts/` | Maps domain-accessible data into a reusable UI presentation model |
+| `<Button onClick={handleClick} />` | `ui/` |  |
+| `toDisplayDate(date)` | `ui/` | Formatting depends on design-system display rules |
+| `canBuyProduct(product)` | `features/` |  |
+| `isNullableOrEmpty(value)` | `utils/` |  |
+| `getProductsAPI()` | `api/endpoints/` |  |
+| `getProductsAdapter()` | `repos/adapters/` |  |
+| `productsQueryOptions()` | `repos/queries/` |  |
+| `toProductFromProductDTO(dto)` | `repos/schemas/` |  |
 
 ## Structure Proposal Rules
 

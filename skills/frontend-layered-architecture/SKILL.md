@@ -1,6 +1,6 @@
 ---
 name: frontend-layered-architecture
-description: Use when frontend work requires deciding code ownership, file placement, import direction, layer boundaries, architecture documentation, or lint/CI enforcement, especially for directory structure, UI/component extraction, shared/type-based folders, API contracts, query/data fetching, URL state, mappers, schemas, hooks, stores, DTOs, or small UI changes that may mix business rules or external data into low-level roles.
+description: "Use when frontend work requires architecture-boundary judgment: code ownership, file placement, import direction, directory roles, UI/component extraction, API/data contracts, data fetching/query, URL state, mappers, schemas, hooks, stores, DTOs, architecture docs, lint/CI boundary enforcement, or small UI changes that risk leaking business rules or external data into lower-level code."
 ---
 
 # Frontend Layered Architecture
@@ -40,6 +40,7 @@ Minimum guards:
 - Shared is determined by code-level independence, not by generic names or absence of domain words. For example, `ProductCard` can be Shared if it only renders injected props, while a generic-looking `buildSearchParams` is not Shared if it knows router state, API request parameters, store state, or business rules.
 - Data means a boundary the frontend consumes like externally-owned code; it does not mean the file must be physically external or written by another team. For example, OpenAPI-generated client/schema code and manually written API endpoint/schema code are both Data when the frontend consumes them as external contracts.
 - Even within the same abstract layer, dependency validity depends on role and responsibility. For example, if a project maps both `features` and `widgets` to Domain, `features` may still be forbidden from importing UI orchestration in `widgets`.
+- When a project has documented or approved folder roles, use those roles first. Map them to abstract layers only to check whether responsibility or dependency direction is being violated; do not replace approved roles with current file names, sparse folders, or polluted usage.
 
 ## Purpose Router
 
@@ -51,7 +52,7 @@ Before acting, classify the user’s purpose in one sentence, then read the firs
 | New frontend project with no chosen directory/layer structure | [`greenfield.md`](./greenfield.md) |
 | Architecture documentation such as `docs/architecture.md`, directory rules, dependency rules, or Mermaid overview | [`writing-docs.md`](./writing-docs.md) |
 | ESLint, CI, import boundaries, or other tool-based enforcement of architecture rules | [`enforcing-rules.md`](./enforcing-rules.md) |
-| Boundary is still ambiguous after the main routed document, or examples are needed to avoid role confusion | [`best-practices.md`](./best-practices.md) |
+| Placement or import direction remains unresolved after applying the main routed document, or broad brownfield audit needs a secondary checklist | [`best-practices.md`](./best-practices.md) |
 
 Routing rules:
 
@@ -59,4 +60,6 @@ Routing rules:
 - If a request has multiple purposes, route to the purpose that controls the next user-visible action. Example: “configure ESLint from architecture rules” routes to `enforcing-rules.md`, not directly to general structure judgment.
 - After reading the routed document, check whether it directly answers the user’s purpose. If not, say what is missing and route to the next required source instead of pretending the skill contains the answer.
 - In existing codebases, do not read `greenfield.md` unless the user explicitly asks for a new structure flow.
-- Do not read `best-practices.md` as a default step. Use it only as a boundary reference after the main route leaves a judgment uncertain.
+- For brownfield decisions, use the unresolved-placement fallback at the end of `brownfield.md`.
+- For broad existing project audits or evaluations, read `brownfield.md` first, then check only the Common Mistakes table in `best-practices.md` as a secondary checklist. Do not apply examples as templates or override project-specific rules.
+- For specific placement/import decisions or implementation work, do not read `best-practices.md` by default.

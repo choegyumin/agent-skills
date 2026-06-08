@@ -1,14 +1,14 @@
 # Frontend Layer Boundary Best Practices
 
-Use this file only as a boundary reference after the main routed document leaves a judgment uncertain.
+Use this file as a boundary reference when the main routed document cannot settle placement or import direction from direct dependencies and responsibility, or as a secondary Common Mistakes checklist during broad existing project architecture audits.
 
-Do not use this file as a directory template, greenfield proposal, or reason to reshape an existing project. Prefer the project’s documented structure and current conventions.
+Do not use this file as a directory template, greenfield proposal, or reason to reshape an existing project. Prefer the project’s documented structure and current conventions. During broad audits, check the Common Mistakes table first; read examples only if a specific boundary remains unclear.
 
-## Example Role Map, Not a Template
+## Example Directory Role Map (Not a Template)
 
 The names below are examples for understanding roles. Do not rename or reshape a project to match them.
 
-| Example name | Role | Layer |
+| Directory | Role | Abstract Layer |
 | --- | --- | --- |
 | `pages` | Screen-level UI orchestration | End-User |
 | `widgets` | Standalone feature UI orchestration | End-User |
@@ -20,12 +20,12 @@ The names below are examples for understanding roles. Do not rename or reshape a
 
 ## Boundary Examples
 
-### API Calls Inside a Shared Component
+### API Calls Inside a Pure Component
 
 Bad:
 
 ```tsx
-// shared/ProductCard.tsx
+// ui/ProductCard.tsx (Shared)
 function ProductCard({ productId }: { productId: string }) {
   const { data } = useQuery(productSummaryQueryOptions(productId));
   return <Card>{data.name}</Card>;
@@ -40,21 +40,21 @@ Why it is bad:
 Safer approach:
 
 ```tsx
-// shared/ProductCard.tsx
+// ui/ProductCard.tsx (Shared)
 function ProductCard({ name }: { name: string }) {
   return <Card>{name}</Card>;
 }
 ```
 
-- Fetch data in the Domain layer or above.
-- Pass only display values into Shared layer components.
+- Fetch data in the End-User layer.
+- Pass only display values into pure components.
 
-### Business Rules Inside the Shared Layer
+### Hiding Business Rules Somewhere Inside the Code
 
 Bad:
 
 ```tsx
-// shared/ProductCard.tsx
+// ui/ProductCard.tsx (Shared)
 function ProductCard({ product }: { product: ProductSummary }) {
   const canBuy = product.status === "ACTIVE" && product.stock > 0;
   return <Button disabled={!canBuy}>Buy</Button>;
@@ -64,7 +64,7 @@ function ProductCard({ product }: { product: ProductSummary }) {
 Or:
 
 ```ts
-// shared/canBuyProduct.ts
+// utils/canBuyProduct.ts (Shared)
 function canBuyProduct(product: ProductSummary) {
   return product.status === "ACTIVE" && product.stock > 0;
 }
@@ -77,12 +77,12 @@ Why it is bad:
 Safer approach:
 
 ```tsx
-// domain/canBuyProduct.ts
+// features/canBuyProduct.ts (Domain)
 function canBuyProduct(product: ProductSummary) {
   return product.status === "ACTIVE" && product.stock > 0;
 }
 
-// shared/ProductCard.tsx
+// ui/ProductCard.tsx (Shared)
 function ProductCard({ disabled }: { disabled: boolean }) {
   return <Button disabled={disabled} />;
 }
@@ -90,18 +90,29 @@ function ProductCard({ disabled }: { disabled: boolean }) {
 <ProductCard disabled={!canBuyProduct(product)} />;
 ```
 
+If the component is intentionally domain-aware:
+
+```tsx
+// parts/ProductCard.tsx (Domain)
+function ProductCard({ product }: { product: ProductSummary }) {
+  return <Button disabled={!canBuyProduct(product)} />;
+}
+
+<ProductCard product={product} />;
+```
+
 - Evaluate business rules in the Domain layer.
 - Pass only display values into Shared layer components.
 
-### Shared Component Depends on API Schemas
+### Component Depends on Multiple API Schemas
 
 Bad:
 
 ```tsx
-// shared/ProductCard.tsx
+// parts/ProductCard.tsx (Domain)
 function ProductCard({ outOfStock, stock }: Partial<ProductSummary, "outOfStock"> | Partial<ProductDetail, "stock">) {
   const soldout = outOfStock || stock < 0;
-  return <Tag>{soldout ? "Sold Out" : "In Stock"}</Tag>;
+  return <Chip>{soldout ? "Sold Out" : "In Stock"}</Chip>;
 }
 
 <ProductCard {...productSummary} />
@@ -116,9 +127,9 @@ Why it is bad:
 Safer approach:
 
 ```tsx
-// shared/ProductCard.tsx
+// ui/ProductCard.tsx (Shared)
 function ProductCard({ soldout }: { soldout: boolean }) {
-  return <Card>{soldout ? "Sold Out" : "In Stock"}</Card>;
+  return <Chip>{soldout ? "Sold Out" : "In Stock"}</Chip>;
 }
 
 <ProductCard soldout={productSummary.outOfStock} />
@@ -128,7 +139,7 @@ function ProductCard({ soldout }: { soldout: boolean }) {
 If you want to reduce duplication:
 
 ```tsx
-// domain/toProductCardProps.ts
+// features/toProductCardProps.ts (Domain)
 function toProductCardPropsFromProductDetail(product: ProductDetail) {
   return { soldout: product.stock < 0 };
 }
@@ -144,7 +155,7 @@ function toProductCardPropsFromProductDetail(product: ProductDetail) {
 Bad:
 
 ```ts
-// shared/useProductEditor.ts
+// pages/useProductEditor.ts (End-User)
 function useProductEditor() {
   const { productId } = useParams();
   const form = useForm();
@@ -169,13 +180,13 @@ Why it is bad:
 Safer approach:
 
 ```tsx
-// shared/useNavigationBlocker.ts
+// utils/useNavigationBlocker.ts (Shared)
 type UseNavigationBlockerOptions = { shouldBlock: boolean; confirm: () => Promise<boolean>; onProceed: () => void };
 function useNavigationBlocker({ shouldBlock, confirm, onProceed }: UseNavigationBlockerOptions) {
   // ...
 }
 
-// pages/ProductEditor.tsx
+// pages/ProductEditor.tsx (End-User)
 function ProductEditor() {
   const { productId } = useParams();
   const { formState: { isDirty } } = useForm();

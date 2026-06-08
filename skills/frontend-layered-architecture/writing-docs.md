@@ -14,6 +14,7 @@ Write project rules only. Do not write an architecture tutorial, onboarding guid
 - Do not record rejected options, decision context, undecided items, placeholder sections, or placeholder wording.
 - Prefer a one-screen document, roughly 50-120 lines. Ask before expanding beyond that.
 - Do not include long per-directory descriptions, exhaustive import matrices, data-flow walkthroughs, framework basics, environment conventions, future adoption criteria, sanity checks, or tool setup details unless explicitly requested.
+- Keep architecture documentation focused on directory structure and dependency rules. Add extra sections only when the user requests them or the target document already uses them.
 - Use the selected final directory names. Do not hardcode names from examples.
 - In the directory structure block, add a short role comment to each selected directory.
 - If directories have different Data access permissions, document them as separate compact rules; do not merge schema/type access and execution access into one dependency-rule bullet.
@@ -21,11 +22,12 @@ Write project rules only. Do not write an architecture tutorial, onboarding guid
 
 ## Mermaid Rules
 
-- Use Mermaid only as a simplified overview: abstract layers as subgraphs, selected top-level directories as nodes.
-- Show limited cross-layer permissions with labeled dotted edges, such as `Source -. allowed scope only .-> Target`; record exact directory-level rules in text.
-- Omit nested subdirectories and layer-internal details from Mermaid. Use `repos` and `api` as Data nodes, not `repos/queries` or `api/endpoints`.
-- Record precise layer-internal import rules in text, not in Mermaid. For example, write `repos/queries -> repos/adapters` as a concrete project rule.
-- The Mermaid graph is a summary, not the source of truth for all allowed imports. Dependency rule bullets are the source of truth.
+- Use Mermaid as a simplified overview for human understanding, not as a complete dependency graph.
+- Show the main relationships between layers first. When only selected directories in another layer are allowed, keep the edge between layers and name the allowed directories in the edge label, such as `EndUser -. collections & dto .-> Data`.
+- Avoid drawing cross-layer edges directly between child directory nodes.
+- Layer-internal arrows are optional. If you show them, use the same convention consistently across the diagram. Include them only when they stay simple, such as two nodes with a one-way dependency.
+- Record only the dependency rules needed to disambiguate the diagram. If another source such as lint configuration is the detailed source of truth, mention it instead of repeating every rule.
+- If Data has limited dependencies on other layers, describe the allowed direction or scope in dependency-rule bullets instead of drawing every relationship.
 
 ## Default Document Shape
 
@@ -88,10 +90,11 @@ flowchart TB
   Domain -. schemas/types only .-> Data
 ```
 
-- The default import direction outside the Data layer is `pages -> widgets -> parts -> features -> ui -> utils`. Reverse imports are forbidden.
+- The default import direction is `End-User -> Domain -> Shared`; `Data` follows separate rules. Reverse imports are forbidden.
+- `Data` is treated as external data contracts consumed by the frontend, even when the code is written inside the frontend codebase. `Data` may depend on other layers only in limited, project-approved ways.
+- Import permission also depends on directory roles. For example, `features` is `Domain`, but it does not import `ui`.
 - `pages` and `widgets` may use Data layer execution code.
 - `parts` and `features` may use only Data layer schema/type code.
-- Inside the Data layer, imports flow from `repos` to `api`.
 ````
 
 Add code convention sections only for rules the user actually decided.
