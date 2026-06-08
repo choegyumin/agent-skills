@@ -1,6 +1,6 @@
-# Greenfield Ask Step
+# Greenfield Project Ask Step
 
-Use this file only to collect the next unresolved user decision.
+Use this file only to collect the next unresolved user decision for a new frontend project structure.
 
 Ask exactly one decision group per response, then stop.
 
@@ -46,5 +46,5 @@ Ask these together as one decision group, then stop:
 - Do not propose directory structure.
 - Do not explain dependency direction.
 - Do not ask for documentation location.
-- Do not read later step files such as `greenfield-propose.md` or `writing-docs.md` from this step.
+- Do not read later step files such as `greenfield-propose.md`, `writing-docs.md`, or `enforcing-rules.md` from this step.
 - Do not write files.

@@ -1,6 +1,6 @@
-# Greenfield Frontend Architecture Flow
+# Greenfield Project Frontend Architecture Flow
 
-Use this file when there is no existing frontend structure and the user has not specified one.
+Use this file when there is no existing frontend directory/layer structure and the user has not specified one.
 
 This file only chooses the next workflow step. Do not use it to ask design questions, propose structure, explain dependencies, or write documentation.
 
@@ -19,6 +19,7 @@ This file is a router, not a table of contents.
 - If the top-level structure and dependency direction are not approved, read `greenfield-propose.md` before proposing anything.
 - Do not create files, change settings, or write documentation before the user approves that action. A target document alone is not approval to write or update it.
 - In existing codebases, ignore this flow unless the user explicitly asks to use it.
+- Do not use this flow as a best-practice reference for existing project judgments.
 
 ## Step Routing
 
@@ -31,19 +32,4 @@ Required design decisions are OpenAPI Code Generation and Data Access Entry Poin
 3. If the top-level structure and dependency direction are approved but follow-up conventions are incomplete, read [`greenfield-ask.md`](./greenfield-ask.md).
 4. If the structure, dependency direction, and follow-up conventions are approved, ask where to record the selected rules unless the user already gave a target document.
 5. If documentation writing is approved, read [`writing-docs.md`](./writing-docs.md) before writing or updating any project document.
-6. After documentation is written and the user answers the adjustment question, ask whether to configure `eslint-plugin-boundaries`.
-
-## ESLint Automation
-
-If the user approves `eslint-plugin-boundaries` automation:
-
-- Check the package manager first.
-- Check whether ESLint uses flat config or legacy config.
-- Check current `eslint-plugin-boundaries` configuration syntax before editing.
-- Encode only the approved import directions and selected directories.
-- Omit directories that were not selected.
-- Do not define OpenAPI generated outputs as boundaries elements.
-- Run lint after configuration.
-- If documentation was written, add only a short note that the rules are also enforced by ESLint.
-
-If the user declines ESLint automation, do not configure ESLint and do not add an absence note to documentation.
+6. If architecture rule enforcement is requested or approved, read [`enforcing-rules.md`](./enforcing-rules.md).

@@ -1,6 +1,8 @@
 # Frontend Architecture Documentation Guide
 
-Use this file to record the selected frontend directory structure and layer rules as a compact project convention summary for future contributors.
+Use this file to record selected frontend directory structure and layer rules as a compact project convention summary for future contributors.
+
+Do not use this file to choose a new project structure, judge existing file placement, or configure lint/CI enforcement. Use `greenfield.md`, `brownfield.md`, or `enforcing-rules.md` for those purposes.
 
 ## Purpose
 
@@ -23,6 +25,7 @@ Write project rules only. Do not write an architecture tutorial, onboarding guid
 - Show limited cross-layer permissions with labeled dotted edges, such as `Source -. allowed scope only .-> Target`; record exact directory-level rules in text.
 - Omit nested subdirectories and layer-internal details from Mermaid. Use `repos` and `api` as Data nodes, not `repos/queries` or `api/endpoints`.
 - Record precise layer-internal import rules in text, not in Mermaid. For example, write `repos/queries -> repos/adapters` as a concrete project rule.
+- The Mermaid graph is a summary, not the source of truth for all allowed imports. Dependency rule bullets are the source of truth.
 
 ## Default Document Shape
 
@@ -107,9 +110,9 @@ Add code convention sections only for rules the user actually decided.
 
 The examples above show document shape only. Replace the directory names and rules with the selected final structure.
 
-## ESLint Note
+## Enforcement Note
 
-If `eslint-plugin-boundaries` is configured, record it with only one short sentence or bullet in the dependency rules. Do not include configuration or setup details in the project document.
+If architecture rules are enforced by ESLint, CI, or another tool, record only one short sentence or bullet in the dependency rules. Do not include configuration or setup details in the project document.
 
 ## After Writing
 
