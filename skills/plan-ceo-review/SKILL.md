@@ -1,7 +1,7 @@
 ---
 name: plan-ceo-review
 version: 1.0.0
-description: CEO/founder-mode plan review. (gstack)
+description: Ambitious plan review for scope, strategy, architecture, edge cases, and implementation readiness. Use when the user wants to rethink a plan, expand or reduce scope, pressure-test assumptions, or produce a rigorous review before implementation.
 allowed-tools:
   - Read
   - Grep
@@ -21,12 +21,12 @@ triggers:
 ## Philosophy
 You are not here to rubber-stamp this plan. You are here to make it extraordinary, catch every landmine before it explodes, and ensure that when this ships, it ships at the highest possible standard.
 But your posture depends on what the user needs:
-* SCOPE EXPANSION: You are building a cathedral. Envision the platonic ideal. Push scope UP. Ask "what would make this 10x better for 2x the effort?" You have permission to dream — and to recommend enthusiastically. But every expansion is the user's decision. Present each scope-expanding idea as an AskUserQuestion. The user opts in or out.
-* SELECTIVE EXPANSION: You are a rigorous reviewer who also has taste. Hold the current scope as your baseline — make it bulletproof. But separately, surface every expansion opportunity you see and present each one individually as an AskUserQuestion so the user can cherry-pick. Neutral recommendation posture — present the opportunity, state effort and risk, let the user decide. Accepted expansions become part of the plan's scope for the remaining sections. Rejected ones go to "NOT in scope."
+* SCOPE EXPANSION: You are building a cathedral. Envision the platonic ideal. Push scope UP. Ask "what would make this 10x better for 2x the effort?" You have permission to dream — and to recommend enthusiastically. But every expansion is the user's decision. Present each scope-expanding idea as a structured choice prompt. The user opts in or out.
+* SELECTIVE EXPANSION: You are a rigorous reviewer who also has taste. Hold the current scope as your baseline — make it bulletproof. But separately, surface every expansion opportunity you see and present each one individually as a structured choice prompt so the user can cherry-pick. Neutral recommendation posture — present the opportunity, state effort and risk, let the user decide. Accepted expansions become part of the plan's scope for the remaining sections. Rejected ones go to "NOT in scope."
 * HOLD SCOPE: You are a rigorous reviewer. The plan's scope is accepted. Your job is to make it bulletproof — catch every failure mode, test every edge case, ensure observability, map every error path. Do not silently reduce OR expand.
 * SCOPE REDUCTION: You are a surgeon. Find the minimum viable version that achieves the core outcome. Cut everything else. Be ruthless.
-* COMPLETENESS IS CHEAP: AI coding compresses implementation time 10-100x. When evaluating "approach A (full, ~150 LOC) vs approach B (90%, ~80 LOC)" — always prefer A. The 70-line delta costs seconds with CC. "Ship the shortcut" is legacy thinking from when human engineering time was the bottleneck. Boil the ocean.
-Critical rule: In ALL modes, the user is 100% in control. Every scope change is an explicit opt-in via AskUserQuestion — never silently add or remove scope. Once the user selects a mode, COMMIT to it. Do not silently drift toward a different mode. If EXPANSION is selected, do not argue for less work during later sections. If SELECTIVE EXPANSION is selected, surface expansions as individual decisions — do not silently include or exclude them. If REDUCTION is selected, do not sneak scope back in. Raise concerns once in Step 0 — after that, execute the chosen mode faithfully.
+* COMPLETENESS IS CHEAP: AI coding compresses implementation time 10-100x. When evaluating "approach A (full, ~150 LOC) vs approach B (90%, ~80 LOC)" — always prefer A. The 70-line delta costs seconds with AI-assisted coding. "Ship the shortcut" is legacy thinking from when human engineering time was the bottleneck. Boil the ocean.
+Critical rule: In ALL modes, the user is 100% in control. Every scope change is an explicit opt-in with a structured choice prompt — never silently add or remove scope. Once the user selects a mode, COMMIT to it. Do not silently drift toward a different mode. If EXPANSION is selected, do not argue for less work during later sections. If SELECTIVE EXPANSION is selected, surface expansions as individual decisions — do not silently include or exclude them. If REDUCTION is selected, do not sneak scope back in. Raise concerns once in Step 0 — after that, execute the chosen mode faithfully.
 Do NOT make any code changes. Do NOT start implementation. Your only job right now is to review the plan with maximum rigor and the appropriate level of ambition.
 
 ## Prime Directives
@@ -97,122 +97,29 @@ Then read CLAUDE.md, TODOS.md, and any existing architecture docs.
 **Design doc check:**
 ```bash
 setopt +o nomatch 2>/dev/null || true  # zsh compat
-SLUG=$(~/.claude/skills/gstack/browse/bin/remote-slug 2>/dev/null || basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-' || echo 'no-branch')
-DESIGN=$(ls -t ~/.gstack/projects/$SLUG/*-$BRANCH-design-*.md 2>/dev/null | head -1)
-[ -z "$DESIGN" ] && DESIGN=$(ls -t ~/.gstack/projects/$SLUG/*-design-*.md 2>/dev/null | head -1)
-[ -n "$DESIGN" ] && echo "Design doc found: $DESIGN" || echo "No design doc found"
+DESIGN=$(find docs -type f \( -path '*/designs/*' -o -path '*/specs/*' -o -path '*/plans/*' \) -name '*.md' 2>/dev/null | sort | tail -1)
+[ -n "$DESIGN" ] && echo "Design/spec/plan doc found: $DESIGN" || echo "No design doc found"
 ```
-If a design doc exists (from `/office-hours`), read it. Use it as the source of truth for the problem statement, constraints, and chosen approach. If it has a `Supersedes:` field, note that this is a revised design.
-
-**Handoff note check** (reuses $SLUG and $BRANCH from the design doc check above):
-```bash
-setopt +o nomatch 2>/dev/null || true  # zsh compat
-HANDOFF=$(ls -t ~/.gstack/projects/$SLUG/*-$BRANCH-ceo-handoff-*.md 2>/dev/null | head -1)
-[ -n "$HANDOFF" ] && echo "HANDOFF_FOUND: $HANDOFF" || echo "NO_HANDOFF"
-```
-If this block runs in a separate shell from the design doc check, recompute $SLUG and $BRANCH first using the same commands from that block.
-If a handoff note is found: read it. This contains system audit findings and discussion
-from a prior CEO review session that paused so the user could run `/office-hours`. Use it
-as additional context alongside the design doc. The handoff note helps you avoid re-asking
-questions the user already answered. Do NOT skip any steps — run the full review, but use
-the handoff note to inform your analysis and avoid redundant questions.
-
-Tell the user: "Found a handoff note from your prior CEO review session. I'll use that
-context to pick up where we left off."
+If a design/spec/plan doc exists, inspect it. Use it as context for the problem statement, constraints, and chosen approach. If it has a `Supersedes:` field, note that this is a revised design.
 
 ## Prerequisite Skill Offer
 
-When the design doc check above prints "No design doc found," offer the prerequisite
-skill before proceeding.
+When the design doc check above prints "No design doc found," offer an office-hours style prerequisite before proceeding.
 
-Say to the user via AskUserQuestion:
+Ask with a structured choice prompt:
 
-> "No design doc found for this branch. `/office-hours` produces a structured problem
-> statement, premise challenge, and explored alternatives — it gives this review much
-> sharper input to work with. Takes about 10 minutes. The design doc is per-feature,
-> not per-product — it captures the thinking behind this specific change."
+> "No design doc found for this branch. An office-hours style discovery pass produces a structured problem statement, premise challenge, and explored alternatives — it gives this review sharper input to work with. Takes about 10 minutes. The design doc is per-feature, not per-product — it captures the thinking behind this specific change."
 
 Options:
-- A) Run /office-hours now (we'll pick up the review right after)
+- A) Run `/office-hours` first if available, then resume this review
 - B) Skip — proceed with standard review
 
-If they skip: "No worries — standard review. If you ever want sharper input, try
-/office-hours first next time." Then proceed normally. Do not re-offer later in the session.
+If they skip: "No worries — standard review. If you ever want sharper input, try /office-hours first next time." Then proceed normally. Do not re-offer later in the session.
 
-If they choose A:
+If they choose A: pause this review and ask the user to run `/office-hours` in this environment if available. Do not load another skill by hardcoded path. After the design doc is produced, re-run the design doc check and continue. If no design doc is produced, proceed with standard review.
 
-Say: "Running /office-hours inline. Once the design doc is ready, I'll pick up
-the review right where we left off."
-
-Read the `/office-hours` skill file at `~/.claude/skills/gstack/office-hours/SKILL.md` using the Read tool.
-
-**If unreadable:** Skip with "Could not load /office-hours — skipping." and continue.
-
-Follow its instructions from top to bottom, **skipping these sections** (already handled by the parent skill):
-- Preamble (run first)
-- AskUserQuestion Format
-- Completeness Principle — Boil the Ocean
-- Search Before Building
-- Contributor Mode
-- Completion Status Protocol
-- Telemetry (run last)
-- Step 0: Detect platform and base branch
-- Review Readiness Dashboard
-- Plan File Review Report
-- Prerequisite Skill Offer
-- Plan Status Footer
-
-Execute every other section at full depth. When the loaded skill's instructions are complete, continue with the next step below.
-
-After /office-hours completes, re-run the design doc check:
-```bash
-setopt +o nomatch 2>/dev/null || true  # zsh compat
-SLUG=$(~/.claude/skills/gstack/browse/bin/remote-slug 2>/dev/null || basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
-BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-' || echo 'no-branch')
-DESIGN=$(ls -t ~/.gstack/projects/$SLUG/*-$BRANCH-design-*.md 2>/dev/null | head -1)
-[ -z "$DESIGN" ] && DESIGN=$(ls -t ~/.gstack/projects/$SLUG/*-design-*.md 2>/dev/null | head -1)
-[ -n "$DESIGN" ] && echo "Design doc found: $DESIGN" || echo "No design doc found"
-```
-
-If a design doc is now found, read it and continue the review.
-If none was produced (user may have cancelled), proceed with standard review.
-
-**Mid-session detection:** During Step 0A (Premise Challenge), if the user can't
-articulate the problem, keeps changing the problem statement, answers with "I'm not
-sure," or is clearly exploring rather than reviewing — offer `/office-hours`:
-
-> "It sounds like you're still figuring out what to build — that's totally fine, but
-> that's what /office-hours is designed for. Want to run /office-hours right now?
-> We'll pick up right where we left off."
-
-Options: A) Yes, run /office-hours now. B) No, keep going.
-If they keep going, proceed normally — no guilt, no re-asking.
-
-If they choose A:
-
-Read the `/office-hours` skill file at `~/.claude/skills/gstack/office-hours/SKILL.md` using the Read tool.
-
-**If unreadable:** Skip with "Could not load /office-hours — skipping." and continue.
-
-Follow its instructions from top to bottom, **skipping these sections** (already handled by the parent skill):
-- Preamble (run first)
-- AskUserQuestion Format
-- Completeness Principle — Boil the Ocean
-- Search Before Building
-- Contributor Mode
-- Completion Status Protocol
-- Telemetry (run last)
-- Step 0: Detect platform and base branch
-- Review Readiness Dashboard
-- Plan File Review Report
-- Prerequisite Skill Offer
-- Plan Status Footer
-
-Execute every other section at full depth. When the loaded skill's instructions are complete, continue with the next step below.
-
-Note current Step 0A progress so you don't re-ask questions already answered.
-After completion, re-run the design doc check and resume the review.
+**Mid-session detection:** During Step 0A (Premise Challenge), if the user can't articulate the problem, keeps changing the problem statement, answers with "I'm not sure," or is clearly exploring rather than reviewing — offer `/office-hours` the same way. If they keep going, proceed normally — no guilt, no re-asking.
 
 When reading TODOS.md, specifically:
 * Note any TODOs this plan touches, blocks, or unlocks
@@ -238,12 +145,12 @@ Report findings before proceeding to Step 0.
 
 ### Landscape Check
 
-Read ETHOS.md for the Search Before Building framework (the preamble's Search Before Building section has the path). Before challenging scope, understand the landscape. WebSearch for:
+Read ETHOS.md for the Search Before Building framework (the preamble's Search Before Building section has the path). Before challenging scope, understand the landscape. If external web search is available, search for:
 - "[product category] landscape {current year}"
 - "[key feature] alternatives"
 - "why [incumbent/conventional approach] [succeeds/fails]"
 
-If WebSearch is unavailable, skip this check and note: "Search unavailable — proceeding with in-distribution knowledge only."
+If external web search is unavailable, skip this check and note: "External search unavailable — proceeding with local context and in-distribution knowledge only."
 
 Run the three-layer synthesis:
 - **[Layer 1]** What's the tried-and-true approach in this space?
@@ -251,81 +158,6 @@ Run the three-layer synthesis:
 - **[Layer 3]** First-principles reasoning — where might the conventional wisdom be wrong?
 
 Feed into the Premise Challenge (0A) and Dream State Mapping (0C). If you find a eureka moment, surface it during the Expansion opt-in ceremony as a differentiation opportunity. Log it (see preamble).
-
-## Prior Learnings
-
-Search for relevant learnings from previous sessions:
-
-```bash
-_CROSS_PROJ=$(~/.claude/skills/gstack/bin/gstack-config get cross_project_learnings 2>/dev/null || echo "unset")
-echo "CROSS_PROJECT: $_CROSS_PROJ"
-if [ "$_CROSS_PROJ" = "true" ]; then
-  ~/.claude/skills/gstack/bin/gstack-learnings-search --limit 10 --cross-project 2>/dev/null || true
-else
-  ~/.claude/skills/gstack/bin/gstack-learnings-search --limit 10 2>/dev/null || true
-fi
-```
-
-If `CROSS_PROJECT` is `unset` (first time): Use AskUserQuestion:
-
-> gstack can search learnings from your other projects on this machine to find
-> patterns that might apply here. This stays local (no data leaves your machine).
-> Recommended for solo developers. Skip if you work on multiple client codebases
-> where cross-contamination would be a concern.
-
-Options:
-- A) Enable cross-project learnings (recommended)
-- B) Keep learnings project-scoped only
-
-If A: run `~/.claude/skills/gstack/bin/gstack-config set cross_project_learnings true`
-If B: run `~/.claude/skills/gstack/bin/gstack-config set cross_project_learnings false`
-
-Then re-run the search with the appropriate flag.
-
-If learnings are found, incorporate them into your analysis. When a review finding
-matches a past learning, display:
-
-**"Prior learning applied: [key] (confidence N/10, from [date])"**
-
-This makes the compounding visible. The user should see that gstack is getting
-smarter on their codebase over time.
-
-
-
-## Brain Context (preflight)
-
-Before asking any clarifying questions, load the brain's structured context
-for this project. The cache layer handles staleness, refresh, and stale-but-
-usable fallback automatically. Skip questions whose answers are already
-present in the loaded context; ground recommendations in what the brain
-already knows about the user, the product, the goals, and recent decisions.
-
-```bash
-eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)" 2>/dev/null || true
-{
-  printf '## Brain Context\n\n'
-  printf '\n### %s\n\n' "product"
-  ~/.claude/skills/gstack/bin/gstack-brain-cache get product --project "$SLUG" 2>/dev/null || printf '_(no product digest available yet)_\n'
-  printf '\n### %s\n\n' "goals"
-  ~/.claude/skills/gstack/bin/gstack-brain-cache get goals --project "$SLUG" 2>/dev/null || printf '_(no goals digest available yet)_\n'
-  printf '\n### %s\n\n' "recent-decisions"
-  ~/.claude/skills/gstack/bin/gstack-brain-cache get recent-decisions --project "$SLUG" 2>/dev/null || printf '_(no recent-decisions digest available yet)_\n'
-  printf '\n### %s\n\n' "user-profile"
-  ~/.claude/skills/gstack/bin/gstack-brain-cache get user-profile  2>/dev/null || printf '_(no user-profile digest available yet)_\n'
-} > /tmp/.gstack-brain-context-$$.md 2>/dev/null
-[ -s /tmp/.gstack-brain-context-$$.md ] && cat /tmp/.gstack-brain-context-$$.md
-rm -f /tmp/.gstack-brain-context-$$.md 2>/dev/null || true
-```
-
-**How to use this context:**
-- If `product` digest names the value prop, target user, or stage — don't re-ask.
-- If `goals` digest lists active goals — frame recommendations against them.
-- If `recent-decisions` digest names a prior scope/architecture choice — flag if this plan contradicts.
-- If `user-profile` digest carries calibration pattern statements ("tends to over-engineer security") — surface them when relevant.
-- If a digest is `(no X digest available yet)`, treat that section as cold; ask the user.
-
-**Privacy:** Salience digest is filtered by allowlist (D9 default: `projects/`,
-`gstack/`, `concepts/` only). Personal/family/therapy content never leaks here.
 
 
 ## Section index — Read each section when its situation applies
@@ -386,18 +218,18 @@ Rules:
 - If only one approach exists, explain concretely why alternatives were eliminated.
 - Do NOT proceed to mode selection (0F) without user approval of the chosen approach.
 
-Present these approach options via AskUserQuestion using the preamble's AskUserQuestion Format section: include RECOMMENDATION and `Completeness: N/10` on every option. These approaches differ in coverage (minimal viable vs ideal architecture), so completeness scoring applies directly.
+Present these approach options with a structured choice prompt using the preamble's structured choice prompt format: include RECOMMENDATION and `Completeness: N/10` on every option. These approaches differ in coverage (minimal viable vs ideal architecture), so completeness scoring applies directly.
 
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. Do NOT proceed to Step 0D or 0F until the user responds to 0C-bis. A "clearly winning approach" is still an approach decision and still needs explicit user approval before it lands in the plan.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. Do NOT proceed to Step 0D or 0F until the user responds to 0C-bis. A "clearly winning approach" is still an approach decision and still needs explicit user approval before it lands in the plan.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### 0D-prelude. Expansion Framing (shared by EXPANSION and SELECTIVE EXPANSION)
 
 Every expansion proposal you generate in SCOPE EXPANSION or SELECTIVE EXPANSION mode follows this framing pattern:
 
-FLAT (avoid): "Add real-time notifications. Users would see workflow results faster — latency drops from ~30s polling to <500ms push. Effort: ~1 hour CC."
+FLAT (avoid): "Add real-time notifications. Users would see workflow results faster — latency drops from ~30s polling to <500ms push. Effort: ~1 hour AI-assisted coding."
 
-EXPANSIVE (aim for): "Imagine the moment a workflow finishes — the user sees the result instantly, no tab-switching, no polling, no 'did it actually work?' anxiety. Real-time feedback turns a tool they check into a tool that talks to them. Concrete shape: WebSocket channel + optimistic UI + desktop notification fallback. Effort: human ~2 days / CC ~1 hour. Makes the product feel 10x more alive."
+EXPANSIVE (aim for): "Imagine the moment a workflow finishes — the user sees the result instantly, no tab-switching, no polling, no 'did it actually work?' anxiety. Real-time feedback turns a tool they check into a tool that talks to them. Concrete shape: WebSocket channel + optimistic UI + desktop notification fallback. Effort: human ~2 days / coding agent ~1 hour. Makes the product feel 10x more alive."
 
 Both are outcome-framed. Only one makes the user feel the cathedral. Lead with the felt experience, close with concrete effort and impact.
 
@@ -408,7 +240,7 @@ Both are outcome-framed. Only one makes the user feel the cathedral. Lead with t
 1. 10x check: What's the version that's 10x more ambitious and delivers 10x more value for 2x the effort? Describe it concretely.
 2. Platonic ideal: If the best engineer in the world had unlimited time and perfect taste, what would this system look like? What would the user feel when using it? Start from experience, not architecture.
 3. Delight opportunities: What adjacent 30-minute improvements would make this feature sing? Things where a user would think "oh nice, they thought of that." List at least 5.
-4. **Expansion opt-in ceremony:** Describe the vision first (10x check, platonic ideal). Then distill concrete scope proposals from those visions — individual features, components, or improvements. Present each proposal as its own AskUserQuestion. Recommend enthusiastically — explain why it's worth doing. But the user decides. Options: **A)** Add to this plan's scope **B)** Defer to TODOS.md **C)** Skip. Accepted items become plan scope for all remaining review sections. Rejected items go to "NOT in scope."
+4. **Expansion opt-in ceremony:** Describe the vision first (10x check, platonic ideal). Then distill concrete scope proposals from those visions — individual features, components, or improvements. Present each proposal as its own structured choice prompt. Recommend enthusiastically — explain why it's worth doing. But the user decides. Options: **A)** Add to this plan's scope **B)** Defer to TODOS.md **C)** Skip. Accepted items become plan scope for all remaining review sections. Rejected items go to "NOT in scope."
 
 **For SELECTIVE EXPANSION** — run the HOLD SCOPE analysis first, then surface expansions:
 1. Complexity check: If the plan touches more than 8 files or introduces more than 2 new classes/services, treat that as a smell and challenge whether the same goal can be achieved with fewer moving parts.
@@ -417,7 +249,7 @@ Both are outcome-framed. Only one makes the user feel the cathedral. Lead with t
    - 10x check: What's the version that's 10x more ambitious? Describe it concretely.
    - Delight opportunities: What adjacent 30-minute improvements would make this feature sing? List at least 5.
    - Platform potential: Would any expansion turn this feature into infrastructure other features can build on?
-4. **Cherry-pick ceremony:** Present each expansion opportunity as its own individual AskUserQuestion. Neutral recommendation posture — present the opportunity, state effort (S/M/L) and risk, let the user decide without bias. Options: **A)** Add to this plan's scope **B)** Defer to TODOS.md **C)** Skip. If you have more than 8 candidates, present the top 5-6 and note the remainder as lower-priority options the user can request. Accepted items become plan scope for all remaining review sections. Rejected items go to "NOT in scope."
+4. **Cherry-pick ceremony:** Present each expansion opportunity as its own individual structured choice prompt. Neutral recommendation posture — present the opportunity, state effort (S/M/L) and risk, let the user decide without bias. Options: **A)** Add to this plan's scope **B)** Defer to TODOS.md **C)** Skip. If you have more than 8 candidates, present the top 5-6 and note the remainder as lower-priority options the user can request. Accepted items become plan scope for all remaining review sections. Rejected items go to "NOT in scope."
 
 **For HOLD SCOPE** — run this:
 1. Complexity check: If the plan touches more than 8 files or introduces more than 2 new classes/services, treat that as a smell and challenge whether the same goal can be achieved with fewer moving parts.
@@ -432,17 +264,16 @@ Both are outcome-framed. Only one makes the user feel the cathedral. Lead with t
 After the opt-in/cherry-pick ceremony, write the plan to disk so the vision and decisions survive beyond this conversation. Only run this step for EXPANSION and SELECTIVE EXPANSION modes.
 
 ```bash
-eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)" && mkdir -p ~/.gstack/projects/$SLUG/ceo-plans
+mkdir -p docs/plans/ceo-review docs/plans/ceo-review/archive
 ```
 
-Before writing, check for existing CEO plans in the ceo-plans/ directory. If any are >30 days old or their branch has been merged/deleted, offer to archive them:
+Before writing, check for existing CEO plans in `docs/plans/ceo-review/`. If any are >30 days old or their branch has been merged/deleted, offer to archive them:
 
 ```bash
-mkdir -p ~/.gstack/projects/$SLUG/ceo-plans/archive
-# For each stale plan: mv ~/.gstack/projects/$SLUG/ceo-plans/{old-plan}.md ~/.gstack/projects/$SLUG/ceo-plans/archive/
+# For each stale plan: mv docs/plans/ceo-review/{old-plan}.md docs/plans/ceo-review/archive/
 ```
 
-Write to `~/.gstack/projects/$SLUG/ceo-plans/{date}-{feature-slug}.md` using this format:
+Write to `docs/plans/ceo-review/{date}-{feature-slug}.md` using this format:
 
 ```markdown
 ---
@@ -482,17 +313,13 @@ After writing the CEO plan, run the spec review loop on it:
 
 Before presenting the document to the user for approval, run an adversarial review.
 
-**Step 1: Dispatch reviewer subagent**
+**Step 1: Run independent review**
 
-Use the Agent tool to dispatch an independent reviewer. The reviewer has fresh context
-and cannot see the brainstorming conversation — only the document. This ensures genuine
-adversarial independence.
+If the environment supports delegated agents or independent review passes, run one reviewer with fresh context. The reviewer sees only the document, not the discussion, which keeps the review skeptical.
 
-Prompt the subagent with:
+Prompt the reviewer with:
 - The file path of the document just written
-- "Read this document and review it on 5 dimensions. For each dimension, note PASS or
-  list specific issues with suggested fixes. At the end, output a quality score (1-10)
-  across all dimensions."
+- "Inspect this document and review it on 5 dimensions. For each dimension, note PASS or list specific issues with suggested fixes. At the end, output a quality score (1-10) across all dimensions."
 
 **Dimensions:**
 1. **Completeness** — Are all requirements addressed? Missing edge cases?
@@ -501,44 +328,29 @@ Prompt the subagent with:
 4. **Scope** — Does the document creep beyond the original problem? YAGNI violations?
 5. **Feasibility** — Can this actually be built with the stated approach? Hidden complexity?
 
-The subagent should return:
+The reviewer should return:
 - A quality score (1-10)
 - PASS if no issues, or a numbered list of issues with dimension, description, and fix
 
-**Step 2: Fix and re-dispatch**
+If delegated review is unavailable, do a separate skeptical pass yourself and label it as self-review.
+
+**Step 2: Fix and re-review**
 
 If the reviewer returns issues:
-1. Fix each issue in the document on disk (use Edit tool)
-2. Re-dispatch the reviewer subagent with the updated document
-3. Maximum 3 iterations total
+1. Update the document on disk.
+2. Re-run the reviewer with the updated document.
+3. Maximum 3 iterations total.
 
-**Convergence guard:** If the reviewer returns the same issues on consecutive iterations
-(the fix didn't resolve them or the reviewer disagrees with the fix), stop the loop
-and persist those issues as "Reviewer Concerns" in the document rather than looping
-further.
+**Convergence guard:** If the reviewer returns the same issues on consecutive iterations (the fix didn't resolve them or the reviewer disagrees with the fix), stop the loop and persist those issues as "Reviewer Concerns" in the document rather than looping further.
 
-If the subagent fails, times out, or is unavailable — skip the review loop entirely.
-Tell the user: "Spec review unavailable — presenting unreviewed doc." The document is
-already written to disk; the review is a quality bonus, not a gate.
+If review fails, times out, or is unavailable — skip the review loop entirely. Tell the user: "Spec review unavailable — presenting unreviewed doc." The document is already written to disk; the review is a quality bonus, not a gate.
 
-**Step 3: Report and persist metrics**
+**Step 3: Report**
 
 After the loop completes (PASS, max iterations, or convergence guard):
 
-1. Tell the user the result — summary by default:
-   "Your doc survived N rounds of adversarial review. M issues caught and fixed.
-   Quality score: X/10."
-   If they ask "what did the reviewer find?", show the full reviewer output.
-
-2. If issues remain after max iterations or convergence, add a "## Reviewer Concerns"
-   section to the document listing each unresolved issue. Downstream skills will see this.
-
-3. Append metrics:
-```bash
-mkdir -p ~/.gstack/analytics
-echo '{"skill":"plan-ceo-review","ts":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","iterations":ITERATIONS,"issues_found":FOUND,"issues_fixed":FIXED,"remaining":REMAINING,"quality_score":SCORE}' >> ~/.gstack/analytics/spec-review.jsonl 2>/dev/null || true
-```
-Replace ITERATIONS, FOUND, FIXED, REMAINING, SCORE with actual values from the review.
+1. Tell the user the result — summary by default: "Your doc survived N rounds of adversarial review. M issues caught and fixed. Quality score: X/10." If they ask "what did the reviewer find?", show the full reviewer output.
+2. If issues remain after max iterations or convergence, add a "## Reviewer Concerns" section to the document listing each unresolved issue. Later review workflows will see this.
 
 ### 0E. Temporal Interrogation (EXPANSION, SELECTIVE EXPANSION, and HOLD modes)
 Think ahead to implementation: What decisions will need to be made during implementation that should be resolved NOW in the plan?
@@ -548,8 +360,8 @@ Think ahead to implementation: What decisions will need to be made during implem
   HOUR 4-5 (integration):  What will surprise them?
   HOUR 6+ (polish/tests):  What will they wish they'd planned for?
 ```
-NOTE: These represent human-team implementation hours. With CC + gstack,
-6 hours of human implementation compresses to ~30-60 minutes. The decisions
+NOTE: These represent human-team implementation hours. With AI-assisted implementation,
+6 hours of human implementation may compress to ~30-60 minutes. The decisions
 are identical — the implementation speed is 10-20x faster. Always present
 both scales when discussing effort.
 
@@ -577,50 +389,31 @@ After mode is selected, confirm which implementation approach (from 0C-bis) appl
 
 Once selected, commit fully. Do not silently drift.
 
-Present these mode options via AskUserQuestion using the preamble's AskUserQuestion Format section: include RECOMMENDATION. These options differ in kind (review posture), not coverage — do NOT emit `Completeness: N/10` per option. Include the one-line note from step 4 of the preamble format rule instead: `Note: options differ in kind, not coverage — no completeness score.`
+Present these mode options with a structured choice prompt using the preamble's structured choice prompt format: include RECOMMENDATION. These options differ in kind (review posture), not coverage — do NOT emit `Completeness: N/10` per option. Include the one-line note from step 4 of the preamble format rule instead: `Note: options differ in kind, not coverage — no completeness score.`
 
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
-> **STOP.** Before running the 11-section deep review, required outputs, and review report (only after Step 0 scope and mode are agreed), Read `~/.claude/skills/gstack/plan-ceo-review/sections/review-sections.md` and execute it
+> **STOP.** Before running the 11-section deep review, required outputs, and review report (only after Step 0 scope and mode are agreed), inspect `sections/review-sections.md` and execute it
 > in full. Do not work from memory — that section is the source of truth for this step.
 
 ## Section self-check (before you finish)
 
 You ran a carved skill. The Section index above named `sections/review-sections.md`
 as the source of truth for the 11-section deep review, the required outputs, and the
-review report. Confirm you issued a Read for it and executed every section from the
+review report. Confirm you inspected it and executed every section from the
 file, not from memory. If you produced the Completion Summary or wrote the review
-report without Reading that section, STOP, Read it now, and redo the review from the
+report without inspecting that section, STOP, Read it now, and redo the review from the
 source of truth.
 
 
-## EXIT PLAN MODE GATE (BLOCKING)
+## PLAN FINALIZATION GATE (BLOCKING)
 
-Before calling ExitPlanMode, run this self-check. If any item fails, do the
-missing work — do NOT call ExitPlanMode:
+Before finalizing the plan or marking the review complete, run this self-check. If any item fails, do the missing work:
 
-1. Read the plan file with the Read tool (after your most recent write to it).
-2. Confirm the LAST `## ` heading in the file is `## GSTACK REVIEW REPORT`.
-   In-body prose that mentions "outside voice", "codex findings", or similar
-   does NOT count — only the structured `## GSTACK REVIEW REPORT` section
-   satisfies this check.
-3. Confirm the report has a Runs / Status / Findings table and a VERDICT line
-   (CODEX / CROSS-MODEL absorbed if applicable).
-4. Confirm the report's FINAL non-whitespace line is the unresolved-decisions
-   status: the exact unbolded `NO UNRESOLVED DECISIONS`, or a bullet of a final
-   `**UNRESOLVED DECISIONS:**` block. BLOCKING, no "if applicable" escape — a
-   bolded sentinel, any trailing CODEX/CROSS-MODEL/VERDICT/prose, or a missing
-   status each FAILS the gate.
-5. If a plan file is in context for this skill invocation: confirm
-   `gstack-review-log` was called and `gstack-review-read` was run at least
-   once. If no plan file is in context (e.g. `/codex consult` against a
-   diff with no plan), this check short-circuits — checks 1-4 already
-   short-circuit when no plan file exists.
+1. Inspect the plan file after your most recent write.
+2. Confirm the LAST `## ` heading in the file is `## PLAN REVIEW REPORT`. In-body prose that mentions "outside voice" or similar does NOT count — only the structured report section satisfies this check.
+3. Confirm the report has a Runs / Status / Findings table and a VERDICT line.
+4. Confirm the report's FINAL non-whitespace line is the unresolved-decisions status: the exact unbolded `NO UNRESOLVED DECISIONS`, or a bullet of a final `**UNRESOLVED DECISIONS:**` block. BLOCKING, no "if applicable" escape — a bolded sentinel, trailing prose, or missing status each FAILS the gate.
 
-Failing this gate and calling ExitPlanMode anyway is a contract violation —
-the user will see a plan whose review report is missing or stale, and will
-(correctly) reject it. Self-deception failure mode to watch for: feeling
-"done" after writing review prose into the plan body. The body prose is not
-the report. The report is a separate, structured, table-bearing section that
-must be the file's terminal heading.
+Failing this gate and finalizing anyway is a contract violation — the user will see a plan whose review report is missing or stale, and will (correctly) reject it. Self-deception failure mode to watch for: feeling "done" after writing review prose into the plan body. The body prose is not the report. The report is a separate, structured, table-bearing section that must be the file's terminal heading.

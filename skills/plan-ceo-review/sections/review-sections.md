@@ -2,7 +2,7 @@
 
 **Anti-skip rule:** Never condense, abbreviate, or skip any review section (1-11) regardless of plan type (strategy, spec, code, infra). Every section in this skill exists for a reason. "This is a strategy doc so implementation sections don't apply" is always wrong — implementation details are where strategy breaks down. If a section genuinely has zero findings, say "No issues found" and move on — but you must evaluate it.
 
-**Anti-shortcut clause:** The plan file is the OUTPUT of the interactive review, not a substitute for it. Writing every finding into one plan write and calling ExitPlanMode without firing AskUserQuestion is the precise failure mode of the May 2026 transcript bug — the model explored, found issues, and dumped them into a deliverable rather than walking the user through them. If you have ANY non-trivial finding in any review section, the path from finding to ExitPlanMode goes THROUGH AskUserQuestion. Zero findings in every section is the only path to ExitPlanMode that bypasses AskUserQuestion. If you find yourself wanting to write a plan with findings before asking, stop and call AskUserQuestion now — that's the bug, recognize it.
+**Anti-shortcut clause:** The plan file is the OUTPUT of the interactive review, not a substitute for it. Writing every finding into one plan write and calling plan finalization without firing structured choice prompt is the precise failure mode of the May 2026 transcript bug — the model explored, found issues, and dumped them into a deliverable rather than walking the user through them. If you have ANY non-trivial finding in any review section, the path from finding to plan finalization goes THROUGH structured choice prompt. Zero findings in every section is the only path to plan finalization that bypasses structured choice prompt. If you find yourself wanting to write a plan with findings before asking, stop and ask with a structured choice prompt now — that's the bug, recognize it.
 
 ### Section 1: Architecture Review
 Evaluate and diagram:
@@ -27,7 +27,7 @@ Evaluate and diagram:
 **SELECTIVE EXPANSION:** If any accepted cherry-picks from Step 0D affect the architecture, evaluate their architectural fit here. Flag any that create coupling concerns or don't integrate cleanly — this is a chance to revisit the decision with new information.
 
 Required ASCII diagram: full system architecture showing new components and their relationships to existing ones.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 2: Error & Rescue Map
@@ -57,7 +57,7 @@ Rules for this section:
 * Every rescued error must either: retry with backoff, degrade gracefully with a user-visible message, or re-raise with added context. "Swallow and continue" is almost never acceptable.
 * For each GAP (unrescued error that should be rescued): specify the rescue action and what the user should see.
 * For LLM/AI service calls specifically: what happens when the response is malformed? When it's empty? When it hallucinates invalid JSON? When the model returns a refusal? Each of these is a distinct failure mode.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 3: Security & Threat Model
@@ -73,7 +73,7 @@ Evaluate:
 * Audit logging. For sensitive operations: is there an audit trail?
 
 For each finding: threat, likelihood (High/Med/Low), impact (High/Med/Low), and whether the plan mitigates it.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 4: Data Flow & Interaction Edge Cases
@@ -110,7 +110,7 @@ For each node: what happens on each shadow path? Is it tested?
                        | Queue backs up 2 hours | ?        |
 ```
 Flag any unhandled edge case as a gap. For each gap, specify the fix.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 5: Code Quality Review
@@ -123,7 +123,7 @@ Evaluate:
 * Over-engineering check. Any new abstraction solving a problem that doesn't exist yet?
 * Under-engineering check. Anything fragile, assuming happy path only, or missing obvious defensive checks?
 * Cyclomatic complexity. Flag any new method that branches more than 5 times. Propose a refactor.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 6: Test Review
@@ -164,7 +164,7 @@ Flakiness risk: Flag any test depending on time, randomness, external services, 
 Load/stress test requirements: For any new codepath called frequently or processing significant data.
 
 For LLM/prompt changes: Check CLAUDE.md for the "Prompt/LLM changes" file patterns. If this plan touches ANY of those patterns, state which eval suites must be run, which cases should be added, and what baselines to compare against.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 7: Performance Review
@@ -176,7 +176,7 @@ Evaluate:
 * Background job sizing. For every new job: worst-case payload, runtime, retry behavior?
 * Slow paths. Top 3 slowest new codepaths and estimated p99 latency.
 * Connection pool pressure. New DB connections, Redis connections, HTTP connections?
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 8: Observability & Debuggability Review
@@ -193,7 +193,7 @@ Evaluate:
 
 **EXPANSION and SELECTIVE EXPANSION addition:**
 * What observability would make this feature a joy to operate? (For SELECTIVE EXPANSION, include observability for any accepted cherry-picks.)
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 9: Deployment & Rollout Review
@@ -209,7 +209,7 @@ Evaluate:
 
 **EXPANSION and SELECTIVE EXPANSION addition:**
 * What deploy infrastructure would make shipping this feature routine? (For SELECTIVE EXPANSION, assess whether accepted cherry-picks change the deployment risk profile.)
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 10: Long-Term Trajectory Review
@@ -225,7 +225,7 @@ Evaluate:
 * What comes after this ships? Phase 2? Phase 3? Does the architecture support that trajectory?
 * Platform potential. Does this create capabilities other features can leverage?
 * (SELECTIVE EXPANSION only) Retrospective: Were the right cherry-picks accepted? Did any rejected expansions turn out to be load-bearing for the accepted ones?
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 11: Design & UX Review (skip if no UI scope detected)
@@ -248,131 +248,41 @@ Evaluate:
 Required ASCII diagram: user flow showing screens/states and transitions.
 
 If this plan has significant UI scope, recommend: "Consider running /plan-design-review for a deep design review of this plan before implementation."
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, you MUST call AskUserQuestion as a tool_use — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
+**STOP.** Ask with one structured choice prompt per issue. Do NOT batch. Recommend + WHY. If this section turned up zero findings, state "No issues, moving on" and proceed. If the section has findings, present a structured choice prompt — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan. Do NOT proceed until the user responds.
 **Reminder: Do NOT make any code changes. Review only.**
 
-## Outside Voice — Independent Plan Challenge (default-on)
+## Outside Voice — Independent Plan Challenge (optional)
 
-After all review sections are complete, run an independent second opinion from a
-different AI system automatically — it is a standard part of plan review, not an
-opt-in. Two models agreeing on a plan is stronger signal than one model's thorough
-review. The user turns this off only by asking explicitly
-(`gstack-config set codex_reviews disabled`).
+After all review sections are complete, run an independent skeptical pass if the environment supports delegated agents or independent review. This is informational, not a gate.
 
-**Preflight — decide whether and how the outside voice runs:**
+**Construct the plan review prompt.** Read the plan file being reviewed (the file the user pointed this review at, or the branch diff scope). If a CEO plan document was written in Step 0D-POST, inspect that too — it contains the scope decisions and vision.
 
-```bash
-# Codex preflight: one block (functions sourced here don't persist to later blocks).
-_TEL=$(~/.claude/skills/gstack/bin/gstack-config get telemetry 2>/dev/null || echo off)
-_CODEX_CFG=$(~/.claude/skills/gstack/bin/gstack-config get codex_reviews 2>/dev/null || echo enabled)
-source ~/.claude/skills/gstack/bin/gstack-codex-probe 2>/dev/null || true
-if [ "$_CODEX_CFG" = "disabled" ]; then
-  _CODEX_MODE="disabled"
-elif ! command -v codex >/dev/null 2>&1; then
-  _CODEX_MODE="not_installed"; _gstack_codex_log_event "codex_cli_missing" 2>/dev/null || true
-elif ! _gstack_codex_auth_probe >/dev/null 2>&1; then
-  _CODEX_MODE="not_authed"; _gstack_codex_log_event "codex_auth_failed" 2>/dev/null || true
-else
-  _CODEX_MODE="ready"; _gstack_codex_version_check 2>/dev/null || true
-fi
-echo "CODEX_MODE: $_CODEX_MODE"
-```
+Construct this prompt (substitute the actual plan content — if plan content exceeds 30KB, truncate to the first 30KB and note "Plan truncated for size"):
 
-Branch on the echoed `CODEX_MODE`:
-- **`disabled`** — the user turned Codex reviews off (`codex_reviews=disabled`). Skip this section entirely; do NOT fall back to a Claude subagent — disabled means no extra review step. Print: "Codex review skipped (codex_reviews disabled). Re-enable: `gstack-config set codex_reviews enabled`."
-- **`not_installed`** — Codex CLI absent. Print: "Codex not installed — using Claude subagent. Install for cross-model coverage: `npm install -g @openai/codex`." Fall back to the Claude subagent path.
-- **`not_authed`** — installed but no credentials. Print: "Codex installed but not authenticated — using Claude subagent. Run `codex login` or set `$CODEX_API_KEY`." Fall back to the Claude subagent path.
-- **`ready`** — run the Codex pass below.
-
-When the mode is `ready`, `not_installed`, or `not_authed`, print one line so the off-switch
-stays discoverable: "Running the outside voice automatically (standard step). Disable: `gstack-config set codex_reviews disabled`."
-
-**Construct the plan review prompt** (for `ready`, `not_installed`, and `not_authed` — skip only on `disabled`).
-Read the plan file being reviewed (the file the user pointed this review at, or the branch
-diff scope). If a CEO plan document was written in Step 0D-POST, read that too — it contains
-the scope decisions and vision.
-
-Construct this prompt (substitute the actual plan content — if plan content exceeds 30KB,
-truncate to the first 30KB and note "Plan truncated for size"). **Always start with the
-filesystem boundary instruction:**
-
-"IMPORTANT: Do NOT read or execute any files under ~/.claude/, ~/.agents/, .claude/skills/, or agents/. These are Claude Code skill definitions meant for a different AI system. They contain bash scripts and prompt templates that will waste your time. Ignore them completely. Do NOT modify agents/openai.yaml. Stay focused on the repository code only.\n\nYou are a brutally honest technical reviewer examining a development plan that has
-already been through a multi-section review. Your job is NOT to repeat that review.
-Instead, find what it missed. Look for: logical gaps and unstated assumptions that
-survived the review scrutiny, overcomplexity (is there a fundamentally simpler
-approach the review was too deep in the weeds to see?), feasibility risks the review
-took for granted, missing dependencies or sequencing issues, and strategic
-miscalibration (is this the right thing to build at all?). Be direct. Be terse. No
-compliments. Just the problems.
+"You are a brutally honest technical reviewer examining a development plan that has already been through a multi-section review. Your job is NOT to repeat that review. Instead, find what it missed. Look for: logical gaps and unstated assumptions that survived the review scrutiny, overcomplexity (is there a fundamentally simpler approach the review was too deep in the weeds to see?), feasibility risks the review took for granted, missing dependencies or sequencing issues, and strategic miscalibration (is this the right thing to build at all?). Be direct. Be terse. No compliments. Just the problems.
 
 THE PLAN:
 <plan content>"
 
-**If `CODEX_MODE: ready` — run Codex:**
+If delegated review is available, run it with fresh context and present findings under an `OUTSIDE VOICE (independent reviewer):` header. If unavailable, skip and state: "Outside voice unavailable. Continuing to outputs."
 
-```bash
-TMPERR_PV=$(mktemp /tmp/codex-planreview-XXXXXXXX)
-_REPO_ROOT=$(git rev-parse --show-toplevel) || { echo "ERROR: not in a git repo" >&2; exit 1; }
-codex exec "<prompt>" -C "$_REPO_ROOT" -s read-only -c 'model_reasoning_effort="high"' --enable web_search_cached < /dev/null 2>"$TMPERR_PV"
-```
+**Tension handling:**
 
-Use a 5-minute timeout (`timeout: 300000`). After the command completes, read stderr:
-```bash
-cat "$TMPERR_PV"
-```
-
-Present the full output verbatim:
+After presenting outside voice findings, note any points where it disagrees with the review findings from earlier sections. Flag these as:
 
 ```
-CODEX SAYS (plan review — outside voice):
-════════════════════════════════════════════════════════════
-<full codex output, verbatim — do not truncate or summarize>
-════════════════════════════════════════════════════════════
-```
-
-**Error handling:** All errors are non-blocking — the outside voice is informational.
-- Auth failure (stderr contains "auth", "login", "unauthorized"): "Codex auth failed. Run \`codex login\` to authenticate." Fall back to the Claude subagent below.
-- Timeout: "Codex timed out after 5 minutes." Fall back to the Claude subagent below.
-- Empty response: "Codex returned no response." Fall back to the Claude subagent below.
-
-**If `CODEX_MODE: not_installed` or `not_authed` (or Codex errored at runtime):**
-
-Dispatch via the Agent tool. The subagent has fresh context — genuine independence.
-Bound it the same way as Codex: cap the dispatch at a 5-minute timeout so "never blocking"
-is also "never hanging."
-
-Subagent prompt: same plan review prompt as above.
-
-Present findings under an `OUTSIDE VOICE (Claude subagent):` header.
-
-If the subagent fails or times out: "Outside voice unavailable. Continuing to outputs."
-
-(On `CODEX_MODE: disabled` you already skipped this section per the preflight — do not reach here.)
-
-**Cross-model tension:**
-
-After presenting the outside voice findings, note any points where the outside voice
-disagrees with the review findings from earlier sections. Flag these as:
-
-```
-CROSS-MODEL TENSION:
+REVIEW TENSION:
   [Topic]: Review said X. Outside voice says Y. [Present both perspectives neutrally.
   State what context you might be missing that would change the answer.]
 ```
 
-**User Sovereignty:** Do NOT auto-incorporate outside voice recommendations into the plan.
-Present each tension point to the user. The user decides. Cross-model agreement is a
-strong signal — present it as such — but it is NOT permission to act. You may state
-which argument you find more compelling, but you MUST NOT apply the change without
-explicit user approval.
+**User Sovereignty:** Do NOT auto-incorporate outside voice recommendations into the plan. Present each tension point to the user. Independent agreement is a strong signal — present it as such — but it is NOT permission to act. You may state which argument you find more compelling, but you MUST NOT apply the change without explicit user approval.
 
-For each substantive tension point, use AskUserQuestion:
+For each substantive tension point, ask with a structured choice prompt:
 
-> "Cross-model disagreement on [topic]. The review found [X] but the outside voice
-> argues [Y]. [One sentence on what context you might be missing.]"
+> "Review tension on [topic]. The review found [X] but the outside voice argues [Y]. [One sentence on what context you might be missing.]"
 >
-> RECOMMENDATION: Choose [A or B] because [one-line reason explaining which argument
-> is more compelling and why]. Completeness: A=X/10, B=Y/10.
+> RECOMMENDATION: Choose [A or B] because [one-line reason explaining which argument is more compelling and why]. Completeness: A=X/10, B=Y/10.
 
 Options:
 - A) Accept the outside voice's recommendation (I'll apply this change)
@@ -380,43 +290,28 @@ Options:
 - C) Investigate further before deciding
 - D) Add to TODOS.md for later
 
-Wait for the user's response. Do NOT default to accepting because you agree with the
-outside voice. If the user chooses B, the current approach stands — do not re-argue.
+Wait for the user's response. Do NOT default to accepting because you agree with the outside voice. If the user chooses B, the current approach stands — do not re-argue.
 
-If no tension points exist, note: "No cross-model tension — both reviewers agree."
-
-**Persist the result:**
-```bash
-~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"codex-plan-review","timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","status":"STATUS","source":"SOURCE","commit":"'"$(git rev-parse --short HEAD)"'"}'
-```
-
-Substitute: STATUS = "clean" if no findings, "issues_found" if findings exist.
-SOURCE = "codex" if Codex ran, "claude" if subagent ran.
-
-**Cleanup:** Run `rm -f "$TMPERR_PV"` after processing (if Codex was used).
+If no tension points exist, note: "No review tension — both passes agree."
 
 ---
 
 ### Outside Voice Integration Rule
 
-Outside voice findings are INFORMATIONAL until the user explicitly approves each one.
-Do NOT incorporate outside voice recommendations into the plan without presenting each
-finding via AskUserQuestion and getting explicit approval. This applies even when you
-agree with the outside voice. Cross-model consensus is a strong signal — present it as
-such — but the user makes the decision.
+Outside voice findings are INFORMATIONAL until the user explicitly approves each one. Do NOT incorporate outside voice recommendations into the plan without presenting each finding with a structured choice prompt and getting explicit approval. This applies even when you agree with the outside voice. Independent consensus is a strong signal — present it as such — but the user makes the decision.
 
 ## Post-Implementation Design Audit (if UI scope detected)
 After implementation, run `/design-review` on the live site to catch visual issues that can only be evaluated with rendered output.
 
 ## CRITICAL RULE — How to ask questions
-Follow the AskUserQuestion format from the Preamble above. Additional rules for plan reviews:
-* **One issue = one AskUserQuestion call.** Never combine multiple issues into one question.
+Follow the structured choice prompt format from the Preamble above. Additional rules for plan reviews:
+* **One issue = one structured choice prompt.** Never combine multiple issues into one question.
 * Describe the problem concretely, with file and line references.
 * Present 2-3 options, including "do nothing" where reasonable.
 * For each option: effort, risk, and maintenance burden in one line.
 * **Map the reasoning to my engineering preferences above.** One sentence connecting your recommendation to a specific preference.
 * Label with issue NUMBER + option LETTER (e.g., "3A", "3B").
-* **Zero findings:** if a section has zero findings, state "No issues, moving on" and proceed. Otherwise, use AskUserQuestion for each finding — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan.
+* **Zero findings:** if a section has zero findings, state "No issues, moving on" and proceed. Otherwise, use a structured choice prompt for each finding — a finding with an "obvious fix" is still a finding and still needs user approval before any change lands in the plan.
 
 ## Required Outputs
 
@@ -440,7 +335,7 @@ Complete table of every method that can fail, every exception class, rescued sta
 Any row with RESCUED=N, TEST=N, USER SEES=Silent → **CRITICAL GAP**.
 
 ### TODOS.md updates
-Present each potential TODO as its own individual AskUserQuestion. Never batch TODOs — one per question. Never silently skip this step. Follow the format in `.claude/skills/review/TODOS-format.md`.
+Present each potential TODO as its own individual structured choice prompt. Never batch TODOs — one per question. Never silently skip this step. Follow the existing `TODOS.md` format in the project.
 
 For each TODO, describe:
 * **What:** One-line description of the work.
@@ -448,7 +343,7 @@ For each TODO, describe:
 * **Pros:** What you gain by doing this work.
 * **Cons:** Cost, complexity, or risks of doing it.
 * **Context:** Enough detail that someone picking this up in 3 months understands the motivation, the current state, and where to start.
-* **Effort estimate:** S/M/L/XL (human team) → with CC+gstack: S→S, M→S, L→M, XL→L
+* **Effort estimate:** S/M/L/XL (human team) → with AI-assisted implementation: S→S, M→S, L→M, XL→L
 * **Priority:** P1/P2/P3
 * **Depends on / blocked by:** Any prerequisites or ordering constraints.
 
@@ -483,13 +378,13 @@ aggregate across phases.
 ```markdown
 ## Implementation Tasks
 Synthesized from this review's findings. Each task derives from a specific
-finding above. Run with Claude Code or Codex; checkbox as you ship.
+finding above. Run with a coding agent or implement manually; checkbox as you ship.
 
-- [ ] **T1 (P1, human: ~2h / CC: ~15min)** — <component> — <imperative title>
+- [ ] **T1 (P1, human: ~2h / AI: ~15min)** — <component> — <imperative title>
   - Surfaced by: <section name> — <specific finding text or line reference>
   - Files: <paths to touch>
   - Verify: <test command or manual check>
-- [ ] **T2 (P2, human: ~30min / CC: ~5min)** — ...
+- [ ] **T2 (P2, human: ~30min / AI: ~5min)** — ...
 ```
 
 Rules:
@@ -505,8 +400,7 @@ Rules:
 backslashes serialize cleanly — never use hand-rolled `echo` / `printf`.
 
 ```bash
-eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
-TASKS_DIR="${HOME}/.gstack/projects/${SLUG:-unknown}"
+TASKS_DIR="docs/plans/review-tasks"
 mkdir -p "$TASKS_DIR"
 TASKS_FILE="$TASKS_DIR/tasks-ceo-review-$(date +%Y%m%d-%H%M%S).jsonl"
 COMMIT=$(git rev-parse HEAD 2>/dev/null || echo unknown)
@@ -516,7 +410,7 @@ RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 # Repeat ONE jq invocation per task identified during this review.
 # Substitute the placeholders inline with shell variables you set per task:
 #   TASK_ID (T1, T2, ...), PRIORITY (P1/P2/P3), COMPONENT, TITLE,
-#   SOURCE_FINDING, EFFORT_HUMAN, EFFORT_CC, FILES_JSON (a JSON array literal
+#   SOURCE_FINDING, EFFORT_HUMAN, EFFORT_AI, FILES_JSON (a JSON array literal
 #   like '["browse/src/sanitize.ts","browse/src/server.ts"]').
 jq -nc \
   --arg phase 'ceo-review' \
@@ -527,11 +421,11 @@ jq -nc \
   --arg priority "$PRIORITY" \
   --arg component "$COMPONENT" \
   --arg effort_human "$EFFORT_HUMAN" \
-  --arg effort_cc "$EFFORT_CC" \
+  --arg effort_ai "$EFFORT_AI" \
   --arg title "$TITLE" \
   --arg source_finding "$SOURCE_FINDING" \
   --argjson files "$FILES_JSON" \
-  '{phase:$phase, run_id:$run_id, branch:$branch, commit:$commit, id:$id, priority:$priority, component:$component, files:$files, effort_human:$effort_human, effort_cc:$effort_cc, title:$title, source_finding:$source_finding}' \
+  '{phase:$phase, run_id:$run_id, branch:$branch, commit:$commit, id:$id, priority:$priority, component:$component, files:$files, effort_human:$effort_human, effort_ai:$effort_ai, title:$title, source_finding:$source_finding}' \
   >> "$TASKS_FILE"
 ```
 
@@ -571,7 +465,7 @@ this run (an empty file means "ran, no findings" — distinct from "didn't run")
   | TODOS.md updates     | ___ items proposed                          |
   | Scope proposals      | ___ proposed, ___ accepted (EXP + SEL)      |
   | CEO plan             | written / skipped (HOLD/REDUCTION)           |
-  | Outside voice        | ran (codex/claude) / skipped                 |
+  | Outside voice        | ran (independent) / skipped                       |
   | Lake Score           | X/Y recommendations chose complete option   |
   | Diagrams produced    | ___ (list types)                            |
   | Stale diagrams found | ___                                         |
@@ -580,216 +474,75 @@ this run (an empty file means "ran, no findings" — distinct from "didn't run")
 ```
 
 ### Unresolved Decisions
-If any AskUserQuestion goes unanswered, note it here. Never silently default.
-
-## Handoff Note Cleanup
-
-After producing the Completion Summary, clean up any handoff notes for this branch —
-the review is complete and the context is no longer needed.
-
-```bash
-setopt +o nomatch 2>/dev/null || true  # zsh compat
-eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)"
-rm -f ~/.gstack/projects/$SLUG/*-$BRANCH-ceo-handoff-*.md 2>/dev/null || true
-```
-
-## Review Log
-
-After producing the Completion Summary above, persist the review result.
-
-**PLAN MODE EXCEPTION — ALWAYS RUN:** This command writes review metadata to
-`~/.gstack/` (user config directory, not project files). The skill preamble
-already writes to `~/.gstack/sessions/` and `~/.gstack/analytics/` — this is
-the same pattern. The review dashboard depends on this data. Skipping this
-command breaks the review readiness dashboard in /ship.
-
-```bash
-~/.claude/skills/gstack/bin/gstack-review-log '{"skill":"plan-ceo-review","timestamp":"TIMESTAMP","status":"STATUS","unresolved":N,"critical_gaps":N,"mode":"MODE","scope_proposed":N,"scope_accepted":N,"scope_deferred":N,"commit":"COMMIT"}'
-~/.claude/skills/gstack/bin/gstack-decision-log '{"decision":"CEO review (MODE): SCOPE_SUMMARY","rationale":"VERDICT","scope":"branch","source":"skill","confidence":8}' 2>/dev/null || true
-```
-
-The second command records the accepted scope as a durable cross-session decision so the next session sees what was settled (and why) without re-litigating it. It writes to `~/.gstack/` (same pattern as review-log), is non-interactive, and is best-effort (`|| true` — never blocks the review). Substitute `SCOPE_SUMMARY` (e.g. "accepted 4 of 6 proposals" for expansion, or "held scope" / "cut 3 items" for HOLD/REDUCTION) and `VERDICT` (the one-line verdict from the summary).
-
-Before running this command, substitute the placeholder values from the Completion Summary you just produced:
-- **TIMESTAMP**: current ISO 8601 datetime (e.g., 2026-03-16T14:30:00)
-- **STATUS**: "clean" if 0 unresolved decisions AND 0 critical gaps; otherwise "issues_open"
-- **unresolved**: number from "Unresolved decisions" in the summary
-- **critical_gaps**: number from "Failure modes: ___ CRITICAL GAPS" in the summary
-- **MODE**: the mode the user selected (SCOPE_EXPANSION / SELECTIVE_EXPANSION / HOLD_SCOPE / SCOPE_REDUCTION)
-- **scope_proposed**: number from "Scope proposals: ___ proposed" in the summary (0 for HOLD/REDUCTION)
-- **scope_accepted**: number from "Scope proposals: ___ accepted" in the summary (0 for HOLD/REDUCTION)
-- **scope_deferred**: number of items deferred to TODOS.md from scope decisions (0 for HOLD/REDUCTION)
-- **COMMIT**: output of `git rev-parse --short HEAD`
-
-## Review Readiness Dashboard
-
-After completing the review, read the review log and config to display the dashboard.
-
-```bash
-~/.claude/skills/gstack/bin/gstack-review-read
-```
-
-Parse the output. Find the most recent entry for each skill (plan-ceo-review, plan-eng-review, review, plan-design-review, design-review-lite, adversarial-review, codex-review, codex-plan-review). Ignore entries with timestamps older than 7 days. For the Eng Review row, show whichever is more recent between `review` (diff-scoped pre-landing review) and `plan-eng-review` (plan-stage architecture review). Append "(DIFF)" or "(PLAN)" to the status to distinguish. For the Adversarial row, show whichever is more recent between `adversarial-review` (new auto-scaled) and `codex-review` (legacy). For Design Review, show whichever is more recent between `plan-design-review` (full visual audit) and `design-review-lite` (code-level check). Append "(FULL)" or "(LITE)" to the status to distinguish. For the Outside Voice row, show the most recent `codex-plan-review` entry — this captures outside voices from both /plan-ceo-review and /plan-eng-review.
-
-**Source attribution:** If the most recent entry for a skill has a \`"via"\` field, append it to the status label in parentheses. Examples: `plan-eng-review` with `via:"autoplan"` shows as "CLEAR (PLAN via /autoplan)". `review` with `via:"ship"` shows as "CLEAR (DIFF via /ship)". Entries without a `via` field show as "CLEAR (PLAN)" or "CLEAR (DIFF)" as before.
-
-Note: `autoplan-voices` and `design-outside-voices` entries are audit-trail-only (forensic data for cross-model consensus analysis). They do not appear in the dashboard and are not checked by any consumer.
-
-Display:
-
-```
-+====================================================================+
-|                    REVIEW READINESS DASHBOARD                       |
-+====================================================================+
-| Review          | Runs | Last Run            | Status    | Required |
-|-----------------|------|---------------------|-----------|----------|
-| Eng Review      |  1   | 2026-03-16 15:00    | CLEAR     | YES      |
-| CEO Review      |  0   | —                   | —         | no       |
-| Design Review   |  0   | —                   | —         | no       |
-| Adversarial     |  0   | —                   | —         | no       |
-| Outside Voice   |  0   | —                   | —         | no       |
-+--------------------------------------------------------------------+
-| VERDICT: CLEARED — Eng Review passed                                |
-+====================================================================+
-```
-
-**Review tiers:**
-- **Eng Review (required by default):** The only review that gates shipping. Covers architecture, code quality, tests, performance. Can be disabled globally with \`gstack-config set skip_eng_review true\` (the "don't bother me" setting).
-- **CEO Review (optional):** Use your judgment. Recommend it for big product/business changes, new user-facing features, or scope decisions. Skip for bug fixes, refactors, infra, and cleanup.
-- **Design Review (optional):** Use your judgment. Recommend it for UI/UX changes. Skip for backend-only, infra, or prompt-only changes.
-- **Adversarial Review (automatic):** Always-on for every review. Every diff gets both Claude adversarial subagent and Codex adversarial challenge. Large diffs (200+ lines) additionally get Codex structured review with P1 gate. No configuration needed.
-- **Outside Voice (optional):** Independent plan review from a different AI model. Offered after all review sections complete in /plan-ceo-review and /plan-eng-review. Falls back to Claude subagent if Codex is unavailable. Never gates shipping.
-
-**Verdict logic:**
-- **CLEARED**: Eng Review has >= 1 entry within 7 days from either \`review\` or \`plan-eng-review\` with status "clean" (or \`skip_eng_review\` is \`true\`)
-- **NOT CLEARED**: Eng Review missing, stale (>7 days), or has open issues
-- CEO, Design, and Codex reviews are shown for context but never block shipping
-- If \`skip_eng_review\` config is \`true\`, Eng Review shows "SKIPPED (global)" and verdict is CLEARED
-
-**Staleness detection:** After displaying the dashboard, check if any existing reviews may be stale:
-- Parse the \`---HEAD---\` section from the bash output to get the current HEAD commit hash
-- For each review entry that has a \`commit\` field: compare it against the current HEAD. If different, count elapsed commits: \`git rev-list --count STORED_COMMIT..HEAD\`. Display: "Note: {skill} review from {date} may be stale — {N} commits since review"
-- For entries without a \`commit\` field (legacy entries): display "Note: {skill} review from {date} has no commit tracking — consider re-running for accurate staleness detection"
-- If all reviews match the current HEAD, do not display any staleness notes
+If any structured choice prompt goes unanswered, note it here. Never silently default.
 
 ## Plan File Review Report
 
-After displaying the Review Readiness Dashboard in conversation output, also update the
-**plan file** itself so review status is visible to anyone reading the plan.
+After producing the Completion Summary in conversation output, also update the **plan file** itself so review status is visible to anyone reading the plan.
 
 ### Detect the plan file
 
-1. Check if there is an active plan file in this conversation (the host provides plan file
-   paths in system messages — look for plan file references in the conversation context).
+1. Check if there is an active plan file in this conversation (the host may provide plan file paths in system messages — look for plan file references in the conversation context).
 2. If not found, skip this section silently — not every review runs in plan mode.
 
 ### Generate the report
 
-Read the review log output you already have from the Review Readiness Dashboard step above.
-Parse each JSONL entry. Each skill logs different fields:
-
-- **plan-ceo-review**: \`status\`, \`unresolved\`, \`critical_gaps\`, \`mode\`, \`scope_proposed\`, \`scope_accepted\`, \`scope_deferred\`, \`commit\`
-  → Findings: "{scope_proposed} proposals, {scope_accepted} accepted, {scope_deferred} deferred"
-  → If scope fields are 0 or missing (HOLD/REDUCTION mode): "mode: {mode}, {critical_gaps} critical gaps"
-- **plan-eng-review**: \`status\`, \`unresolved\`, \`critical_gaps\`, \`issues_found\`, \`mode\`, \`commit\`
-  → Findings: "{issues_found} issues, {critical_gaps} critical gaps"
-- **plan-design-review**: \`status\`, \`initial_score\`, \`overall_score\`, \`unresolved\`, \`decisions_made\`, \`commit\`
-  → Findings: "score: {initial_score}/10 → {overall_score}/10, {decisions_made} decisions"
-- **plan-devex-review**: \`status\`, \`initial_score\`, \`overall_score\`, \`product_type\`, \`tthw_current\`, \`tthw_target\`, \`mode\`, \`persona\`, \`competitive_tier\`, \`unresolved\`, \`commit\`
-  → Findings: "score: {initial_score}/10 → {overall_score}/10, TTHW: {tthw_current} → {tthw_target}"
-- **devex-review**: \`status\`, \`overall_score\`, \`product_type\`, \`tthw_measured\`, \`dimensions_tested\`, \`dimensions_inferred\`, \`boomerang\`, \`commit\`
-  → Findings: "score: {overall_score}/10, TTHW: {tthw_measured}, {dimensions_tested} tested/{dimensions_inferred} inferred"
-- **codex-review**: \`status\`, \`gate\`, \`findings\`, \`findings_fixed\`
-  → Findings: "{findings} findings, {findings_fixed}/{findings} fixed"
-
-All fields needed for the Findings column are now present in the JSONL entries.
-For the review you just completed, you may use richer details from your own Completion
-Summary. For prior reviews, use the JSONL fields directly — they contain all required data.
+Use this review's Completion Summary and any review artifacts produced in this session. Do not depend on external review logs.
 
 Produce this markdown table:
 
-\`\`\`markdown
-## GSTACK REVIEW REPORT
+```markdown
+## PLAN REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
-| CEO Review | \`/plan-ceo-review\` | Scope & strategy | {runs} | {status} | {findings} |
-| Codex Review | \`/codex review\` | Independent 2nd opinion | {runs} | {status} | {findings} |
-| Eng Review | \`/plan-eng-review\` | Architecture & tests (required) | {runs} | {status} | {findings} |
-| Design Review | \`/plan-design-review\` | UI/UX gaps | {runs} | {status} | {findings} |
-| DX Review | \`/plan-devex-review\` | Developer experience gaps | {runs} | {status} | {findings} |
-\`\`\`
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | {status} | {mode, proposals accepted/deferred, critical gaps} |
+| Outside Voice | independent review | Skeptical second pass | {0 or 1} | {ran/skipped} | {tension count or "none"} |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required before implementation) | {known runs or "not checked"} | {recommended/not checked} | {why it is or is not needed next} |
+| Design Review | `/plan-design-review` | UI/UX gaps | {known runs or "not checked"} | {recommended/skipped/not checked} | {UI scope summary} |
+```
 
-Below the table, add these lines. **CODEX** and **CROSS-MODEL** are optional (omit when
-empty); **VERDICT** is always present:
+Below the table, add these lines. **OUTSIDE VOICE** and **REVIEW TENSION** are optional (omit when empty); **VERDICT** is always present:
 
-- **CODEX:** (only if codex-review ran) — one-line summary of codex fixes
-- **CROSS-MODEL:** (only if both Claude and Codex reviews exist) — overlap analysis
-- **VERDICT:** list reviews that are CLEAR (e.g., "CEO + ENG CLEARED — ready to implement").
-  If Eng Review is not CLEAR and not skipped globally, append "eng review required".
+- **OUTSIDE VOICE:** (only if outside voice ran) — one-line summary
+- **REVIEW TENSION:** (only if tension exists) — one-line summary
+- **VERDICT:** list reviews that are CLEAR or recommended next (e.g., "CEO CLEARED — run ENG REVIEW before implementation").
 
-**Unresolved-decisions status (MANDATORY — never omitted; the report's final non-whitespace
-line).** After VERDICT, end the report (content under the \`## GSTACK REVIEW REPORT\`
-heading — a bold label, never a new \`## \` heading; exempt from the "omit when empty"
-rule) with exactly one: the exact unbolded line \`NO UNRESOLVED DECISIONS\` (a bolded one
-does NOT count), OR a \`**UNRESOLVED DECISIONS:**\` header + one bullet per open item
-(last bullet = final line; add \`+ N unresolved from prior reviews\` only when N > 0).
-This avoids double-counting: list THIS review's open items from context; for prior reviews
-sum \`unresolved\` over the latest fresh row per skill (dashboard 7-day window) after you
-DROP the current skill's row; emit the sentinel only when both are zero.
+**Unresolved-decisions status (MANDATORY — never omitted; the report's final non-whitespace line).** After VERDICT, end the report (content under the `## PLAN REVIEW REPORT` heading — a bold label, never a new `## ` heading) with exactly one: the exact unbolded line `NO UNRESOLVED DECISIONS` (a bolded one does NOT count), OR a `**UNRESOLVED DECISIONS:**` header + one bullet per open item (last bullet = final line).
 
 ### Write to the plan file
 
-**PLAN MODE EXCEPTION — ALWAYS RUN:** This writes to the plan file, which is the one
-file you are allowed to edit in plan mode. The plan file review report is part of the
-plan's living status.
+The report must always be the LAST section of the plan file — never mid-file. Use a single delete-then-append flow:
 
-The report must always be the LAST section of the plan file — never mid-file.
-Use a single delete-then-append flow:
+1. Inspect the plan file to see its full current content. Search for a `## PLAN REVIEW REPORT` heading anywhere in the file.
+2. If found, delete the entire existing section. Match from `## PLAN REVIEW REPORT` through either the next `## ` heading or end of file, whichever comes first. Replace with the empty string. This applies regardless of where the section currently lives — mid-file deletion is intentional, not a special case. If the edit fails (e.g., concurrent edit changed the content), re-inspect the plan file and retry once.
+3. After the delete (or skipped, if no section existed), append the new `## PLAN REVIEW REPORT` section at the END of the file.
+4. Verify that `## PLAN REVIEW REPORT` is the last `## ` heading in the file before continuing. If it isn't, repeat steps 2-3 once.
 
-1. Read the plan file (Read tool) to see its full current content. Search the read
-   output for a \`## GSTACK REVIEW REPORT\` heading anywhere in the file.
-2. If found, use the Edit tool to DELETE the entire existing section. Match from
-   \`## GSTACK REVIEW REPORT\` through either the next \`## \` heading or end of
-   file, whichever comes first. Replace with the empty string. This applies
-   regardless of where the section currently lives — mid-file deletion is
-   intentional, not a special case. If the Edit fails (e.g., concurrent edit
-   changed the content), re-read the plan file and retry once.
-3. After the delete (or skipped, if no section existed), append the new
-   \`## GSTACK REVIEW REPORT\` section at the END of the file. Use the Edit
-   tool to match the file's current last paragraph and add the section after it,
-   or use Write to re-emit the whole file with the section at the end.
-4. Verify with the Read tool that \`## GSTACK REVIEW REPORT\` is the last
-   \`## \` heading in the file before continuing. If it isn't, repeat steps
-   2-3 once.
-
-Do NOT replace the section in place. The "replace mid-file" path is what allowed
-prior versions to leave the report mid-file when an older report already lived
-there — the user then sees a plan whose review report is not at the bottom and
-(correctly) rejects it.
+Do NOT replace the section in place. The "replace mid-file" path can leave the report mid-file when an older report already lived there — the user then sees a plan whose review report is not at the bottom and rejects it.
 
 ## Next Steps — Review Chaining
 
-After displaying the Review Readiness Dashboard, recommend the next review(s) based on what this CEO review discovered. Read the dashboard output to see which reviews have already been run and whether they are stale.
+After the CEO review, recommend the next review(s) based on what this review discovered.
 
-**Recommend /plan-eng-review if eng review is not skipped globally** — check the dashboard output for `skip_eng_review`. If it is `true`, eng review is opted out — do not recommend it. Otherwise, eng review is the required shipping gate. If this CEO review expanded scope, changed architectural direction, or accepted scope expansions, emphasize that a fresh eng review is needed. If an eng review already exists in the dashboard but the commit hash shows it predates this CEO review, note that it may be stale and should be re-run.
+**Recommend /plan-eng-review** when this review expanded scope, changed architecture, found significant implementation risk, or produced implementation tasks that need architectural/test planning. It is the normal pre-implementation gate for non-trivial work.
 
-**Recommend /plan-design-review if UI scope was detected** — specifically if Section 11 (Design & UX Review) was NOT skipped, or if accepted scope expansions included UI-facing features. If an existing design review is stale (commit hash drift), note that. In SCOPE REDUCTION mode, skip this recommendation — design review is unlikely relevant for scope cuts.
+**Recommend /plan-design-review** if UI scope was detected — specifically if Section 11 (Design & UX Review) was NOT skipped, or if accepted scope expansions included UI-facing features. In SCOPE REDUCTION mode, skip this recommendation unless UI risk remains.
 
-**If both are needed, recommend eng review first** (required gate), then design review.
+**If both are needed, recommend eng review first** (implementation gate), then design review.
 
-Use AskUserQuestion to present the next step. Include only applicable options:
-- **A)** Run /plan-eng-review next (required gate)
+Ask with a structured choice prompt. Include only applicable options:
+- **A)** Run /plan-eng-review next
 - **B)** Run /plan-design-review next (only if UI scope detected)
 - **C)** Skip — I'll handle reviews manually
 
 ## docs/designs Promotion (EXPANSION and SELECTIVE EXPANSION only)
 
-At the end of the review, if the vision produced a compelling feature direction, offer to promote the CEO plan to the project repo. AskUserQuestion:
+At the end of the review, if the vision produced a compelling feature direction, offer to promote the CEO plan to the project repo. Ask with a structured choice prompt:
 
 "The vision from this review produced {N} accepted scope expansions. Want to promote it to a design doc in the repo?"
 - **A)** Promote to `docs/designs/{FEATURE}.md` (committed to repo, visible to the team)
-- **B)** Keep in `~/.gstack/projects/` only (local, personal reference)
+- **B)** Keep in `docs/plans/ceo-review/` only
 - **C)** Skip
 
 If promoted, copy the CEO plan content to `docs/designs/{FEATURE}.md` (create the directory if needed) and update the `status` field in the original CEO plan from `ACTIVE` to `PROMOTED`.
@@ -800,86 +553,6 @@ If promoted, copy the CEO plan content to `docs/designs/{FEATURE}.md` (create th
 * One sentence max per option.
 * After each section, pause and wait for feedback.
 * Use **CRITICAL GAP** / **WARNING** / **OK** for scannability.
-
-## Capture Learnings
-
-If you discovered a non-obvious pattern, pitfall, or architectural insight during
-this session, log it for future sessions:
-
-```bash
-~/.claude/skills/gstack/bin/gstack-learnings-log '{"skill":"plan-ceo-review","type":"TYPE","key":"SHORT_KEY","insight":"DESCRIPTION","confidence":N,"source":"SOURCE","files":["path/to/relevant/file"]}'
-```
-
-**Types:** `pattern` (reusable approach), `pitfall` (what NOT to do), `preference`
-(user stated), `architecture` (structural decision), `tool` (library/framework insight),
-`operational` (project environment/CLI/workflow knowledge).
-
-**Sources:** `observed` (you found this in the code), `user-stated` (user told you),
-`inferred` (AI deduction), `cross-model` (both Claude and Codex agree).
-
-**Confidence:** 1-10. Be honest. An observed pattern you verified in the code is 8-9.
-An inference you're not sure about is 4-5. A user preference they explicitly stated is 10.
-
-**files:** Include the specific file paths this learning references. This enables
-staleness detection: if those files are later deleted, the learning can be flagged.
-
-**Only log genuine discoveries.** Don't log obvious things. Don't log things the user
-already knows. A good test: would this insight save time in a future session? If yes, log it.
-
-
-
-## Brain Calibration Write-Back (Phase 2 / gated)
-
-When the skill makes a typed prediction worth tracking (scope decision,
-TTHW target, architectural bet, wedge commitment), it MAY write a
-`kind=bet` take to the brain so a calibration profile builds over time.
-
-**Gated on two things:**
-1. Brain trust policy for the active endpoint is `personal` (check via
-   `~/.claude/skills/gstack/bin/gstack-config get brain_trust_policy@<endpoint-hash>`).
-   Shared brains skip write-back to avoid polluting team calibration.
-2. Feature flag `BRAIN_CALIBRATION_WRITEBACK` is set (today: false; flips
-   to true when upstream gbrain v0.42+ ships `takes_add` MCP op).
-
-When both gates pass, the write-back path uses `mcp__gbrain__takes_add`
-to record a take with weight 0.8 (per SKILL_CALIBRATION_WEIGHTS).
-If the MCP op is unavailable, fall back to `mcp__gbrain__put_page` with
-a gstack:takes fence block (documented but uglier path).
-
-Mandatory take frontmatter shape:
-```yaml
-kind: bet
-holder: <user identity from whoami>
-claim: <one-line prediction the skill is making>
-weight: 0.8
-since_date: <today's date>
-expected_resolution: <date in 1-3 months depending on skill>
-source_skill: plan-ceo-review
-```
-
-After write, invalidate the affected digests so the next preflight reflects
-the new state:
-
-```bash
-eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)" 2>/dev/null || true
-  ~/.claude/skills/gstack/bin/gstack-brain-cache invalidate product --project "$SLUG" 2>/dev/null || true
-  ~/.claude/skills/gstack/bin/gstack-brain-cache invalidate goals --project "$SLUG" 2>/dev/null || true
-  ~/.claude/skills/gstack/bin/gstack-brain-cache invalidate competitive-intel --project "$SLUG" 2>/dev/null || true
-```
-
-
-## Brain Cache Background Refresh
-
-After the skill's work completes (and telemetry has logged), kick a
-background refresh of any cache digest that's getting close to its TTL.
-This is non-blocking — the user doesn't wait. Next invocation benefits
-from the warm cache.
-
-```bash
-eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)" 2>/dev/null || true
-(~/.claude/skills/gstack/bin/gstack-brain-cache refresh --project "$SLUG" 2>/dev/null &) || true
-```
-
 
 ## Mode Quick Reference
 ```
