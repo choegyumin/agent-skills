@@ -1,5 +1,3 @@
-<!-- AUTO-GENERATED from design-and-handoff.md.tmpl — do not edit directly -->
-<!-- Regenerate: bun run gen:skill-docs -->
 ## Phase 5: Design Doc
 
 Write the design document to the project directory.

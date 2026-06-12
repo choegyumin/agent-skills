@@ -1,5 +1,3 @@
-<!-- AUTO-GENERATED from review-sections.md.tmpl — do not edit directly -->
-<!-- Regenerate: bun run gen:skill-docs -->
 ## Review Sections (11 sections, after scope and mode are agreed)
 
 **Anti-skip rule:** Never condense, abbreviate, or skip any review section (1-11) regardless of plan type (strategy, spec, code, infra). Every section in this skill exists for a reason. "This is a strategy doc so implementation sections don't apply" is always wrong — implementation details are where strategy breaks down. If a section genuinely has zero findings, say "No issues found" and move on — but you must evaluate it.
