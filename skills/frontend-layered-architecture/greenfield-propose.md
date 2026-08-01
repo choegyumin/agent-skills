@@ -6,7 +6,7 @@ This step interprets the collected answers, proposes the top-level directory str
 
 ## Baseline Directory Structure
 
-The structure below is the maximum structure when OpenAPI code generation is not used and all optional directories are selected. Depending on the selected options, `api/*` and `repos/*` may be omitted.
+The structure below is the maximum structure when OpenAPI code generation is not used and all optional directories are selected. Depending on the selected options, `data/*` directories may be omitted.
 
 ```txt
 src/
@@ -19,22 +19,18 @@ src/
   ui/
   utils/
 
-  api/
+  data/
     endpoints/
     schemas/
-  repos/
     adapters/
-    queries/
-    schemas/
+    contracts/
 ```
 
 Apply selected options before presenting the final proposal:
 
-- If OpenAPI generated outputs replace manual API code, omit `api/`, `api/endpoints/`, and `api/schemas/`; treat generated client/schema code as Data layer code.
-- If no repository entry point is selected, omit `repos/`.
-- If only Query/Mutation Options are selected, include `repos/queries` and `repos/schemas`.
-- If only API adapters are selected, include `repos/adapters` and `repos/schemas`.
-- If both repository entry points are selected, include `repos/queries`, `repos/adapters`, and `repos/schemas`.
+- If OpenAPI generated outputs replace manual API code, omit `data/endpoints/` and `data/schemas/`; treat generated client/schema code as Data layer code.
+- If the API adapter pattern is not selected, omit `data/adapters/` and `data/contracts/`.
+- When the project uses TanStack Query, declare Query/Mutation Options alongside the corresponding endpoint or adapter functions.
 - Add framework-required directories or renames only when the framework requires them. For example, Next.js App Router may use `app/` instead of `pages/`; Vite React does not require renaming `pages/`.
 
 ## Directory Role Reference
@@ -47,19 +43,17 @@ Apply selected options before presenting the final proposal:
 | `features` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain | Reusable business rules, validation, calculations, and feature flags. They exclude API calls and external service access. Compose `features` from pure functions, modules, types, and constants. Examples: `canBuyProduct(product)`, `isBetaEnabled(user)`. |
 | `ui` | General-purpose UI presentation | Shared | Pure general-purpose UI components similar to a design system. Examples: `<Button />`, `<Switch />`. |
 | `utils` | General-purpose utility logic | Shared | General-purpose utilities such as pure functions, browser built-in API extensions, and general-purpose React custom hooks. |
-| `api` | Data | Data | External API contract/access boundary. |
-| `api/endpoints` | Data | Data | API endpoint functions and API request/response execution boundaries. |
-| `api/schemas` | Data | Data | API Request/Response and DTO types. |
-| `repos` | Data | Data | Data access adapter layer for controlling the impact radius of external API changes. |
-| `repos/adapters` | Data | Data | API adapter functions. |
-| `repos/queries` | Data | Data | Query/Mutation Options. |
-| `repos/schemas` | Data | Data | DTO mappers and transformation types/schemas. |
+| `data` | Data | Data | External data contracts and access boundary. |
+| `data/endpoints` | Data | Data | API request execution and Query/Mutation Options. |
+| `data/schemas` | Data | Data | API Request/Response and DTO types. |
+| `data/adapters` | Data | Data | API adaptation and Query/Mutation Options. |
+| `data/contracts` | Data | Data | Adapter input/output contracts and DTO mappers. |
 
 Notes:
 
 - Think again before adding `widgets`. Most code is sufficiently handled by inlining it in `pages` or abstracting it into `parts` or `ui`. Do not add `widgets` merely to reduce the amount of code needed for reuse.
 - `features` is the layer that best reveals real-world business requirements. It is closest to Clean Architecture Entities and Use Cases in this structure, but it must not directly participate in rendering or external service execution. Delegate rendering to `parts`, and compose `features` from pure functions, modules, types, and constants.
-- `repos` adjusts interfaces so external API changes do not propagate directly to the End-User/Domain layers, and it does not enforce a specific code pattern such as Repository Classes.
+- `data/adapters` and `data/contracts` adjust interfaces so external API changes do not propagate directly to the End-User/Domain layers, and they do not enforce a specific code pattern such as Repository Classes.
 - Treat Data as external contract code consumed by the frontend. It may live inside the repository or be written by frontend developers; that does not change its Data role. For example, OpenAPI-generated clients/schemas and manually written endpoint/schema modules can both be Data.
 
 ## Dependency Rules
@@ -68,14 +62,14 @@ Except for the Data layer, the default import direction is `pages -> widgets -> 
 
 Rules:
 
-- Inside the Data layer, the default import direction is `repos -> api`.
-  - Inside `repos`, the default import direction is `repos/queries -> repos/adapters -> repos/schemas`.
-  - `repos/adapters` may call `api/endpoints` and use `api/schemas`.
-  - Inside `api`, the default import direction is `api/endpoints -> api/schemas`.
-- Depending on the selected directory structure, `api/*` or `repos/*` may not exist.
+- Inside the Data layer:
+  - `data/adapters` may call `data/endpoints` and use `data/schemas` and `data/contracts`.
+  - `data/endpoints` and `data/contracts` may use `data/schemas`.
+  - Query/Mutation Options declared in `data/endpoints` or `data/adapters` may use the regular function in their own directory.
+- Depending on the selected directory structure, `data/*` directories may not exist.
 - When `pages` and `widgets` access files in the same layer, they are limited to internal private modules. For example, a product list page must not import a product detail page.
-- `pages` and `widgets` may access all Data layer code, including OpenAPI generated outputs, `api/*`, and `repos/*`.
-- `parts` and `features` may access only schema code in the Data layer, such as OpenAPI generated schema/types, `api/schemas`, and `repos/schemas`. They must not access Data layer execution code such as API clients, endpoint/adapter functions, or query/mutation options.
+- `pages` and `widgets` may access all Data layer code, including OpenAPI generated outputs and `data/*`.
+- `parts` and `features` may access only schema/type code in the Data layer, such as OpenAPI generated schema/types, `data/schemas`, and `data/contracts`. They must not access Data layer execution code such as API clients, endpoint/adapter functions, or query/mutation options.
 - `ui` and `utils` must not depend on business rules, routing, stores, query client libraries such as TanStack Query, API schemas, or API execution code.
 - When `features -> ui` is used, rendering JSX or importing components/hooks is forbidden. This dependency should mainly be used for types or data transformation.
 
@@ -91,10 +85,10 @@ Rules:
 | `toDisplayDate(date)` | `ui/` | Formatting depends on design-system display rules |
 | `canBuyProduct(product)` | `features/` |  |
 | `isNullableOrEmpty(value)` | `utils/` |  |
-| `getProductsAPI()` | `api/endpoints/` |  |
-| `getProductsAdapter()` | `repos/adapters/` |  |
-| `productsQueryOptions()` | `repos/queries/` |  |
-| `toProductFromProductDTO(dto)` | `repos/schemas/` |  |
+| `getProductsAPI()` | `data/endpoints/` |  |
+| `getProducts()` | `data/adapters/` |  |
+| `productsQueryOptions()` | `data/endpoints/` or `data/adapters/` | Declare alongside the regular function it uses. |
+| `toProductFromProductDTO(dto)` | `data/contracts/` or `features/` | Use `data/contracts/` only for external DTO adaptation; keep Domain models and business rules in `features/`. |
 
 ## Structure Proposal Rules
 

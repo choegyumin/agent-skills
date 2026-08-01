@@ -16,7 +16,7 @@ The names below are examples for understanding roles. Do not rename or reshape a
 | `features` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain |
 | `ui` | General-purpose UI presentation | Shared |
 | `utils` | General-purpose utility logic | Shared |
-| `api` | External data boundary | Data |
+| `data` | External data boundary for API endpoints, schemas, and Query/Mutation Options | Data |
 
 ## Boundary Examples
 

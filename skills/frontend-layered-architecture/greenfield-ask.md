@@ -17,18 +17,14 @@ Options:
 - A. Use OpenAPI code generation.
 - B. Do not use OpenAPI code generation.
 
-### 2. Data Access Entry Points (Repository pattern)
+### 2. Data Access Entry Points
 
-Ask which repository entry points the project should use for REST API access and query client integration, such as TanStack Query.
-
-Here, Repository means a Data layer access boundary, not the Repository Class pattern.
+Ask whether the project should use the API adapter pattern for REST API access and optional DTO transformation.
 
 Options:
 
-- A. Query/Mutation Options entry point, such as TanStack Query options.
-- B. API adapter function entry point for API calls and optional DTO transformation.
-- C. Both entry points.
-- D. No repository entry point.
+- A. Use the API adapter pattern.
+- B. Do not use the API adapter pattern.
 
 ### 3. Follow-up Conventions
 

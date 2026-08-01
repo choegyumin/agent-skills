@@ -40,16 +40,19 @@ Use this structure when the target document does not already have a better match
 
 ```txt
 src/
-  pages/     # Screen-level UI orchestration
-  widgets/   # Standalone feature UI orchestration
-  parts/     # Domain-aware UI presentation
-  ui/        # General-purpose UI presentation
+  pages/        # Screen-level UI orchestration
+  widgets/      # Standalone feature UI orchestration
+  parts/        # Domain-aware UI presentation
+  ui/           # General-purpose UI presentation
 
-  features/  # Reusable business rules, similar to Clean Architecture entities/use-cases
-  utils/     # General-purpose utility logic
+  features/     # Reusable business rules, similar to Clean Architecture entities/use-cases
+  utils/        # General-purpose utility logic
 
-  api/       # API client and endpoint functions
-  repos/     # Data access adapter layer that limits the impact of external API changes
+  data/         # External data contracts and access boundary
+    endpoints/  # API request execution and Query/Mutation Options
+    schemas/    # API Request/Response and DTO types
+    adapters/   # API adaptation and Query/Mutation Options
+    contracts/  # Adapter input/output contracts and DTO mappers
 ```
 
 ### Dependency Rules
@@ -79,9 +82,14 @@ flowchart TB
 
   subgraph Data
     direction TB
-    repos[repos]
-    api[api]
-    repos --> api
+    adapters[adapters]
+    endpoints[endpoints]
+    contracts[contracts]
+    schemas[schemas]
+    adapters --> endpoints
+    adapters --> contracts
+    endpoints --> schemas
+    contracts --> schemas
   end
 
   End-User --> Domain
