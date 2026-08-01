@@ -65,46 +65,68 @@ The following are not valid reasons to create a custom hook.
 
 This applies when state values and state transitions are the hook's essential responsibility. These hooks do not directly depend on external data.
 
-Examples:
+Example:
 
 ```ts
-useDisclosure();
-useSelection();
-useStepper();
-useToggle();
-useDebouncedValue(value, delay);
+function useDisclosure(initialOpen = false) {
+  const [isOpen, setIsOpen] = useState(initialOpen);
+  const open = useCallback(() => setIsOpen(true), []);
+  const close = useCallback(() => setIsOpen(false), []);
+  const toggle = useCallback(() => setIsOpen((current) => !current), []);
+
+  return { isOpen, open, close, toggle };
+}
 ```
+
+This hook owns one state machine: open or closed. It has no hidden external dependency.
 
 ### React lifecycle/effects are the core responsibility
 
 This applies when the logic cannot be expressed as an ordinary function and React rendering, subscriptions, cleanup, refs, or DOM integration are central to solving the problem.
 
-Examples:
+Example:
 
 ```ts
-useWindowSize();
-useIntersectionObserver(ref);
-useFocusTrap(ref);
-useOnClickOutside(ref, handler);
-useWhiteboardInteraction(ref, handlers);
-useQuery(queryOptions);
-useChatRoomSubscription(roomId, client);
-useGeolocation();
+function useOnClickOutside(ref: RefObject<HTMLElement | null>, onOutside: () => void) {
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      if (!ref.current?.contains(event.target as Node)) {
+        onOutside();
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [onOutside, ref]);
+}
 ```
 
+The browser subscription and its cleanup require React lifecycle handling, so an ordinary function cannot replace this hook.
+
 ## Always Bad Custom Hooks
+
+### React-independent calculations
+
+Do not create a hook for calculations that have no React dependency. Use an ordinary function instead.
+
+```tsx
+// Bad
+function useCartTotalPrice(items: CartItem[]) {
+  return useMemo(
+    () => items.reduce((total, item) => total + item.price * item.quantity, 0),
+    [items],
+  );
+}
+
+// Good
+function calculateCartTotalPrice(items: CartItem[]) {
+  return items.reduce((total, item) => total + item.price * item.quantity, 0);
+}
+```
 
 ### Thin wrappers
 
 Do not create a wrapper that only renames an existing dependency. In these cases, it is usually better to create an ordinary function for the arguments passed into the existing hook or for the value returned from it.
-
-Examples:
-
-```ts
-useUserProfileQuery(userId);
-useWorkspaceRouteParams();
-useCurrentWorkspace();
-```
 
 ```ts
 // Bad
@@ -132,7 +154,7 @@ const { workspaceId } = useMemo(() => parseWorkspaceRouteState(params), [params]
 
 Business-logic hooks can be acceptable, but they are not always good. Most bad custom hooks happen here.
 
-Examples:
+Examples that can be good or bad:
 
 ```ts
 useUserProfileForm(initialProfile);
@@ -147,22 +169,58 @@ Judge them by whether the hook's responsibility is clear, whether it hides depen
 
 These are signs that responsibility boundaries have become blurry.
 
-```ts
-const {
-  user,
-  isLoading,
-  error,
-  refetch,
-  selectedTab,
-  navigateTab,
-  form,
-  setForm,
-  submit,
-  notify,
-} = useUserProfile();
+```tsx
+function useUserProfile({ userId }: { userId: string }) {
+  const userQuery = useQuery(userProfileQueryOptions({ userId }));
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = parseUserProfileTab(searchParams);
+  const form = useForm<UserProfileFormValues>();
+  const updateUserProfile = useMutation(updateUserProfileMutationOptions());
+  const notify = useNotifier();
+
+  function navigateTab(tab: UserProfileTab) {
+    setSearchParams({ tab });
+  }
+
+  function submit(values: UserProfileFormValues) {
+    updateUserProfile.mutate(
+      { userId, ...values },
+      { onSuccess: () => notify("Profile saved") },
+    );
+  }
+
+  return {
+    user: userQuery.data,
+    isLoading: userQuery.isLoading,
+    error: userQuery.error,
+    refetch: userQuery.refetch,
+    currentTab,
+    navigateTab,
+    form,
+    submit,
+    notify,
+  };
+}
 ```
 
-This hook hides dependencies on external data fetching, tab state, routing, form state and submission, and notifications. The component became shorter, but the behavior became harder to predict.
+This hook hides dependencies on external data fetching, tab state, routing, form state and submission, and notifications. The component became shorter, but the behavior became harder to predict. It also makes a screen-specific flow appear reusable, exposing other components to dependencies and control flow they should own.
+
+Keep those dependencies visible in the component instead:
+
+```tsx
+function UserProfilePage({ userId }: { userId: string }) {
+  const userQuery = useQuery(userProfileQueryOptions({ userId }));
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = parseUserProfileTab(searchParams);
+  const form = useForm<UserProfileFormValues>();
+  const updateUserProfile = useMutation(updateUserProfileMutationOptions());
+  const notify = useNotifier();
+
+  return <div>{/* ... */}</div>;
+}
+```
+
+This component may still need a split, but its data fetching, routing, form, mutation, and notification dependencies are explicit. The component controls the flow instead of delegating it to an opaque hook.
 
 Better directions:
 
@@ -186,20 +244,11 @@ The responsibility of a Controller Pattern Hook is "the target component's funct
 Example:
 
 ```tsx
-export function CheckoutPage() {
-  const controller = useCheckoutPageController();
+export function UserProfilePage({ userId }: { userId: string }) {
+  // Its return shape resembles `useUserProfile`, but unlike `useUserProfile`, this controller hook has a 1:1 relationship with UserProfilePage.
+  const { ...controller } = useUserProfilePageController({ userId });
 
-  return (
-    <section>
-      <h2>Checkout</h2>
-      <CheckoutForm
-        paymentMethods={controller.availablePaymentMethods}
-        selectedPaymentMethodId={controller.selectedPaymentMethodId}
-        onPaymentMethodChange={controller.selectPaymentMethod}
-        onSubmit={controller.submit}
-      />
-    </section>
-  );
+  return <div>{/* ... */}</div>;
 }
 ```
 
