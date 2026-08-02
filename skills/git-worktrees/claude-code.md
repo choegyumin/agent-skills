@@ -1,8 +1,8 @@
-## Step 2: Create Git Worktree with Claude Code
+# Claude Code workflow
 
-Only when Claude Code provides `EnterWorktree` and Step 0 found no existing isolation.
+Use only when the router selected Claude Code with `EnterWorktree`. This document owns creation through terminal reporting.
 
-### 1. Choose the worktree mode and target
+## 1. Choose the worktree mode and target
 
 **New work:** Resolve `BASE_SHA` from the requested starting ref, or use the current `HEAD` when no ref was provided. Choose a new branch name.
 
@@ -20,7 +20,7 @@ Do not rely on shell variables across separate Bash calls. Claude Code does not 
 
 If a requested non-PR ref cannot be resolved locally, stop and ask whether to correct the ref or allow a fetch. Do not fetch it automatically.
 
-### 2. Validate the target before creating anything
+## 2. Validate the target before creating anything
 
 **New work:** Validate the requested branch name and confirm it does not already exist:
 
@@ -47,7 +47,7 @@ TARGET_WORKTREE=$(
 
 If `TARGET_WORKTREE` is non-empty, do not create a second worktree for that branch. Report the existing path and ask whether to work there or create a detached worktree at `TARGET_SHA`.
 
-### 3. Create the worktree with Claude Code's native tool
+## 3. Create the worktree with Claude Code's native tool
 
 ```text
 EnterWorktree({})
@@ -57,7 +57,7 @@ This creates a random worktree path and temporary branch, and processes the root
 
 If `EnterWorktree({})` fails, stop and ask whether to retry, continue in the current checkout, or resolve the failure. Do not silently work in the current checkout.
 
-### 4. Set the requested branch and revision inside the new worktree
+## 4. Set the requested branch and revision inside the new worktree
 
 **New work:** Rename the generated branch and reset it to the chosen base commit:
 
@@ -102,7 +102,7 @@ Never delete the target branch. If switching or deleting the temporary branch fa
 
 If resetting or switching fails, the worktree is not aligned to the requested target. Stop and report the error; ask whether to remove it and create a fresh one.
 
-### 5. Verify the result
+## 5. Verify the result
 
 ```bash
 git rev-parse --show-toplevel
@@ -112,7 +112,7 @@ git rev-parse HEAD
 
 For new work, confirm the branch equals `BRANCH` and `HEAD` equals `BASE_SHA`. For existing-ref work, confirm `HEAD` equals `TARGET_SHA` and confirm the requested branch is checked out when attached mode was selected.
 
-### 6. Install dependencies after branch/ref setup when the package manager is clear
+## 6. Install dependencies when the package manager is clear
 
 Ask if ambiguous. Skip only if the user asked to skip or no dependency files exist.
 
@@ -146,9 +146,13 @@ if [ -f go.mod ]; then go mod download;
 fi
 ```
 
-## Cleanup
+## 7. Report and stop
 
-When the user asks to leave the worktree:
+Report with source `Claude Code`, then stop. On failure, preserve current state and request the required decision; do not switch workflows.
+
+## Reference: cleanup
+
+When the user later asks to leave the worktree:
 
 - No changes or commits need preservation:
 
