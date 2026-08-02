@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Layered Architecture"
+policy:
+  allow_implicit_invocation: true

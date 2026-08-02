@@ -1,2 +1,4 @@
+interface:
+  display_name: "To Idea"
 policy:
   allow_implicit_invocation: false

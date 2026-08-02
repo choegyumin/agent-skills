@@ -1,0 +1,4 @@
+interface:
+  display_name: "You Dont Need React Custom Hooks"
+policy:
+  allow_implicit_invocation: true
