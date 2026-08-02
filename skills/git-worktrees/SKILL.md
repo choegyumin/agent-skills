@@ -3,7 +3,7 @@ name: git-worktrees
 description: Set up isolated git worktrees — create a new branch for fresh work, or attach a worktree to an existing branch/PR/commit to work on it in isolation. Use when starting isolated work or isolating an existing ref; detects existing isolation first.
 ---
 
-# Worktree Isolation
+# Git Worktree
 
 Ensure the current work happens in an isolated workspace, without disturbing the user's main checkout. Most coding harnesses now create a worktree by default at session start, so the common case is that **isolation already exists** — detect that first and do not create a redundant one.
 
@@ -42,8 +42,8 @@ If they **differ**, you are in a linked worktree _or_ a submodule. Distinguish t
 git rev-parse --show-superproject-working-tree
 ```
 
-- **Non-empty** output -> you are in a submodule; treat it as a normal checkout and continue to Step 1.
-- **Empty** output -> you are **already in an isolated worktree**. Report the worktree path (`git rev-parse --show-toplevel`) and current branch. Do not create another worktree — a worktree-from-worktree lands in the wrong tree and is invisible to the harness that made the current one. Then **work in place**: in new-work mode, continue here; in isolate-an-existing-ref mode, check that ref out here (unless it is already the current branch) rather than nesting a worktree.
+- **Non-empty** output: you are in a submodule; treat it as a normal checkout and continue to Step 1.
+- **Empty** output: you are **already in an isolated worktree**. Report the worktree path (`git rev-parse --show-toplevel`) and current branch. Do not create another worktree — creating a worktree from another worktree lands in the wrong tree and is invisible to the harness that made the current one. Then **work in place**: in new-work mode, continue here; in isolate-an-existing-ref mode, check that ref out here (unless it is already the current branch) rather than nesting a worktree.
 
 ## Step 1: Route to environment-specific instructions
 
