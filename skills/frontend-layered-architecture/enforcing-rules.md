@@ -16,81 +16,84 @@ Before editing:
 
 ## Reference Flat Config
 
-This complete example uses the current flat-config API and covers the maximum Greenfield structure from `greenfield-propose.md`: OpenAPI generation is not used and the API adapter pattern is selected. Replace it with the approved project directories and dependency directions. Omit unselected optional directories and map generated OpenAPI client/schema paths when generation is selected.
+This complete example uses the current flat-config API and covers the maximum Greenfield structure from `greenfield-propose.md`: OpenAPI generation is not used and the API adapter pattern is selected. It assumes each directory role groups code into child namespaces. Replace it with the approved project directories, grouping convention, and dependency directions. Omit unselected optional directories and map generated OpenAPI client/schema paths when generation is selected.
 
 ```js
 import boundaries from "eslint-plugin-boundaries";
 
 /**
  * @typedef {string} BoundaryElementType
+ * @typedef {"internal" | "child" | "parent" | "descendant" | "ancestor" | "sibling" | "uncle" | "nephew"} BoundaryRelationship
+ * @typedef {object} BoundaryLayer
+ * @property {BoundaryElementType} type
+ * @property {string} pattern
+ * @property {BoundaryRelationship[]} relationships
+ * @property {BoundaryElementType[]} dependencies
  */
 
-/** @type {Array<[type: BoundaryElementType, pattern: string]>} */
-const boundaryElements = [
-  ["end-user:pages", "src/pages"],
-  ["end-user:widgets", "src/widgets"],
-  ["domain:parts", "src/parts"],
-  ["domain:features", "src/features"],
-  ["shared:ui", "src/ui"],
-  ["shared:utils", "src/utils"],
-  ["data:endpoints", "src/data/endpoints"],
-  ["data:schemas", "src/data/schemas"],
-  ["data:adapters", "src/data/adapters"],
-  ["data:contracts", "src/data/contracts"],
+/** @type {BoundaryLayer[]} */
+const boundaryLayers = [
+  {
+    type: "end-user:page",
+    pattern: "src/pages/*",
+    relationships: ["internal"],
+    dependencies: ["end-user:widget", "domain:part", "domain:feature", "shared:ui", "shared:utility", "data:endpoint", "data:schema", "data:adapter", "data:contract"],
+  },
+  {
+    type: "end-user:widget",
+    pattern: "src/widgets/*",
+    relationships: ["internal"],
+    dependencies: ["domain:part", "domain:feature", "shared:ui", "shared:utility", "data:endpoint", "data:schema", "data:adapter", "data:contract"],
+  },
+  {
+    type: "domain:part",
+    pattern: "src/parts/*",
+    relationships: ["internal", "sibling"],
+    dependencies: ["domain:feature", "shared:ui", "shared:utility", "data:schema", "data:contract"],
+  },
+  {
+    type: "domain:feature",
+    pattern: "src/features/*",
+    relationships: ["internal", "sibling"],
+    dependencies: ["shared:ui", "shared:utility", "data:schema", "data:contract"],
+  },
+  {
+    type: "shared:ui",
+    pattern: "src/ui/*",
+    relationships: ["internal", "sibling"],
+    dependencies: ["shared:utility"],
+  },
+  {
+    type: "shared:utility",
+    pattern: "src/utils/*",
+    relationships: ["internal", "sibling"],
+    dependencies: [],
+  },
+  {
+    type: "data:endpoint",
+    pattern: "src/data/endpoints/*",
+    relationships: ["internal", "sibling"],
+    dependencies: ["data:schema"],
+  },
+  {
+    type: "data:schema",
+    pattern: "src/data/schemas/*",
+    relationships: ["internal", "sibling"],
+    dependencies: [],
+  },
+  {
+    type: "data:adapter",
+    pattern: "src/data/adapters/*",
+    relationships: ["internal", "sibling"],
+    dependencies: ["data:endpoint", "data:schema", "data:contract"],
+  },
+  {
+    type: "data:contract",
+    pattern: "src/data/contracts/*",
+    relationships: ["internal", "sibling"],
+    dependencies: ["data:schema"],
+  },
 ];
-
-/** @type {Record<BoundaryElementType, BoundaryElementType[]>} */
-const boundaryDependencies = {
-  "end-user:pages": [
-    "end-user:pages",
-    "end-user:widgets",
-    "domain:parts",
-    "domain:features",
-    "shared:ui",
-    "shared:utils",
-    "data:endpoints",
-    "data:schemas",
-    "data:adapters",
-    "data:contracts",
-  ],
-  "end-user:widgets": [
-    "end-user:widgets",
-    "domain:parts",
-    "domain:features",
-    "shared:ui",
-    "shared:utils",
-    "data:endpoints",
-    "data:schemas",
-    "data:adapters",
-    "data:contracts",
-  ],
-  "domain:parts": [
-    "domain:parts",
-    "domain:features",
-    "shared:ui",
-    "shared:utils",
-    "data:schemas",
-    "data:contracts",
-  ],
-  "domain:features": [
-    "domain:features",
-    "shared:ui",
-    "shared:utils",
-    "data:schemas",
-    "data:contracts",
-  ],
-  "shared:ui": ["shared:ui", "shared:utils"],
-  "shared:utils": ["shared:utils"],
-  "data:endpoints": ["data:endpoints", "data:schemas"],
-  "data:schemas": ["data:schemas"],
-  "data:adapters": [
-    "data:adapters",
-    "data:endpoints",
-    "data:schemas",
-    "data:contracts",
-  ],
-  "data:contracts": ["data:contracts", "data:schemas"],
-};
 
 export default [
   {
@@ -99,7 +102,7 @@ export default [
     plugins: { boundaries },
     settings: {
       ...boundaries.configs.recommended.settings,
-      "boundaries/elements": boundaryElements.map(([type, pattern]) => ({
+      "boundaries/elements": boundaryLayers.map(({ type, pattern }) => ({
         type,
         pattern,
         partialMatch: false,
@@ -112,11 +115,27 @@ export default [
         {
           default: "disallow",
           checkAllOrigins: false,
-          policies: Object.entries(boundaryDependencies).map(
-            ([type, dependencies]) => ({
-              from: { element: { type } },
-              allow: { to: { element: { type: dependencies } } },
-            }),
+          policies: boundaryLayers.flatMap(
+            ({ type, relationships, dependencies }) => {
+              const relationshipPolicy = {
+                from: { element: { type } },
+                allow: {
+                  to: { element: { type } },
+                  dependency: { relationship: { to: relationships } },
+                },
+              };
+              const dependencyPolicies =
+                dependencies.length === 0
+                  ? []
+                  : [
+                      {
+                        from: { element: { type } },
+                        allow: { to: { element: { type: dependencies } } },
+                      },
+                    ];
+
+              return [relationshipPolicy, ...dependencyPolicies];
+            },
           ),
         },
       ],
@@ -127,7 +146,8 @@ export default [
 
 ## Adaptation Rules
 
-- Map each approved directory role to `<abstract-layer>:<project-role>`, such as `domain:features`.
+- Map each approved directory role to `<abstract-layer>:<project-role>`, such as `domain:feature`, and keep its pattern, allowed dependency types, and namespace relationships in one boundary entry.
+- Model each child namespace as its own element. Use `relationships: ["internal"]` when only imports within the same namespace are allowed, or add `"sibling"` when namespaces of the same role may import each other. Adapt the pattern to the approved grouping convention when namespaces are not child directories.
 - Allow only approved complete element types and keep `default: "disallow"`; a shared layer prefix grants no dependency permission.
 - Keep Data execution and contract paths separate when consumers have different permissions. Restrict which consumers may import generated OpenAPI paths; do not govern what generated files may import.
 - Do not add unapproved directories or exceptions. When using another enforcement tool, preserve the same mapping and default-deny principle.
