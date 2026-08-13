@@ -29,9 +29,9 @@ Write project rules only. Do not write an architecture tutorial, onboarding guid
 - Record only the dependency rules needed to disambiguate the diagram. If another source such as lint configuration is the detailed source of truth, mention it instead of repeating every rule.
 - If Data has limited dependencies on other layers, describe the allowed direction or scope in dependency-rule bullets instead of drawing every relationship.
 
-## Default Document Shape
+## Reference Document
 
-Use this structure when the target document does not already have a better matching structure.
+Use this template when the target document does not already have a better matching structure. It shows the maximum Greenfield structure from `greenfield-propose.md`: OpenAPI generation is not used and the API adapter pattern is selected. Replace it with the approved final structure and rules, omit unselected optional Data directories, and apply framework-required renames.
 
 ````md
 ## Layered Architecture
@@ -42,10 +42,11 @@ Use this structure when the target document does not already have a better match
 src/
   pages/        # Screen-level UI orchestration
   widgets/      # Standalone feature UI orchestration
-  parts/        # Domain-aware UI presentation
-  ui/           # General-purpose UI presentation
 
+  parts/        # Domain-aware UI presentation
   features/     # Reusable business rules, similar to Clean Architecture entities/use-cases
+
+  ui/           # General-purpose UI presentation
   utils/        # General-purpose utility logic
 
   data/         # External data contracts and access boundary
@@ -100,7 +101,7 @@ flowchart TB
 
 - The default import direction is `End-User -> Domain -> Shared`; `Data` follows separate rules. Reverse imports are forbidden.
 - `Data` is treated as external data contracts consumed by the frontend, even when the code is written inside the frontend codebase. `Data` may depend on other layers only in limited, project-approved ways.
-- Import permission also depends on directory roles. For example, `features` is `Domain`, but it does not import `ui`.
+- Import permission also depends on directory roles. For example, `features` may import `ui` only for approved non-rendering dependencies such as types or data transformation; it must not render JSX or import UI components or hooks.
 - `pages` and `widgets` may use Data layer execution code.
 - `parts` and `features` may use only Data layer schema/type code.
 ````
@@ -119,7 +120,7 @@ Add code convention sections only for rules the user actually decided.
 - Unit test files live next to the files they test.
 ````
 
-The examples above show document shape only. Replace the directory names and rules with the selected final structure.
+The examples above show document shape only. Do not retain example directories or rules that were not selected.
 
 ## Enforcement Note
 

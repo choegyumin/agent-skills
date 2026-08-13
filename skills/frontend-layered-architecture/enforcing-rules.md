@@ -115,6 +115,9 @@ export default [
         {
           default: "disallow",
           checkAllOrigins: false,
+          checkInternals: boundaryLayers.some(
+            ({ relationships }) => !relationships.includes("internal"),
+          ),
           policies: boundaryLayers.flatMap(
             ({ type, relationships, dependencies }) => {
               const relationshipPolicy = {
@@ -147,7 +150,7 @@ export default [
 ## Adaptation Rules
 
 - Map each approved directory role to `<abstract-layer>:<project-role>`, such as `domain:feature`, and keep its pattern, allowed dependency types, and namespace relationships in one boundary entry.
-- Model each child namespace as its own element. Use `relationships: ["internal"]` when only imports within the same namespace are allowed, or add `"sibling"` when namespaces of the same role may import each other. Adapt the pattern to the approved grouping convention when namespaces are not child directories.
+- Model each child namespace as its own element. Use `relationships: ["internal"]` when only imports within the same namespace are allowed, or add `"sibling"` when namespaces of the same role may import each other. Internal imports are checked only when at least one boundary omits `"internal"`. Adapt the pattern to the approved grouping convention when namespaces are not child directories.
 - Allow only approved complete element types and keep `default: "disallow"`; a shared layer prefix grants no dependency permission.
 - Keep Data execution and contract paths separate when consumers have different permissions. Restrict which consumers may import generated OpenAPI paths; do not govern what generated files may import.
 - Do not add unapproved directories or exceptions. When using another enforcement tool, preserve the same mapping and default-deny principle.
