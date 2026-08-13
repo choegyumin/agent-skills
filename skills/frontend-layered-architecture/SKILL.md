@@ -55,7 +55,7 @@ Classify the user’s purpose in one sentence, then read the first matching docu
 | Existing project structure judgment, file placement, file extraction, import direction, or dependency boundary decision | [`brownfield.md`](./brownfield.md) |
 | New frontend project with no chosen directory/layer structure | [`greenfield.md`](./greenfield.md) |
 | Architecture documentation such as `docs/architecture.md`, directory rules, dependency rules, or Mermaid overview | [`writing-docs.md`](./writing-docs.md) |
-| ESLint, CI, import boundaries, or other tool-based enforcement of architecture rules | [`enforcing-rules.md`](./enforcing-rules.md) |
+| `eslint-plugin-boundaries`, ESLint, CI, import boundaries, or other tool-based enforcement of architecture rules | [`enforcing-rules.md`](./enforcing-rules.md) |
 | Placement or import direction remains unresolved after applying the main routed document, or broad brownfield audit needs a secondary checklist | [`best-practices.md`](./best-practices.md) |
 
 Routing rules:

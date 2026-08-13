@@ -1,68 +1,145 @@
 # Enforcing Architecture Rules
 
-Use this file when the user wants architecture rules enforced by tools such as ESLint, CI, import boundary checks, or similar automation.
+Use this file when the user wants approved architecture rules enforced through ESLint, CI, import boundary checks, or similar automation.
 
-Do not use this file for general structure judgment, new project structure selection, or architecture documentation by itself. Use `brownfield.md`, `greenfield.md`, or `writing-docs.md` for those purposes.
+Do not choose architecture here. Use the approved project architecture as the source of truth. If real directory roles and dependency directions are not established, return to `brownfield.md` or `greenfield.md` first.
 
-## Scope
+## Default Tool
 
-This file covers how to translate approved architecture rules into enforceable checks. It is not a plugin syntax reference.
+Use `eslint-plugin-boundaries` unless the project already uses another suitable tool or the user selects one.
 
-If the user asks for a specific ESLint/plugin/API configuration, check current tool documentation before proposing syntax. Follow the project’s package manager and ESLint config style.
+Before editing:
 
-## Rule Source
+- Add the plugin with the project package manager if it is not installed.
+- Check the installed plugin version and current documentation.
+- Preserve the project's lint runner and configuration style. Adapt the reference syntax to the installed version instead of silently upgrading it.
 
-Before writing or proposing rules, identify the source of truth:
+## Reference Flat Config
 
-1. Project architecture document, such as `docs/architecture.md`.
-2. Explicit user-approved directory/layer mapping.
-3. Existing lint rules or import conventions.
-4. Existing project structure, only when `brownfield.md` has established that the relevant design is intentional and no stronger source exists.
+This complete example uses the current flat-config API and covers the maximum Greenfield structure from `greenfield-propose.md`: OpenAPI generation is not used and the API adapter pattern is selected. Replace it with the approved project directories and dependency directions. Omit unselected optional directories and map generated OpenAPI client/schema paths when generation is selected.
 
-Do not invent lint rules from abstract layer names alone. End-User, Domain, Shared, and Data are abstract concepts, not enforceable folder names unless the project maps them to real directories.
+```js
+import boundaries from "eslint-plugin-boundaries";
 
-Without a project document or explicit mapping, enforce only the intentional mapping or Brownfield baseline established through `brownfield.md`.
+/**
+ * @typedef {string} BoundaryElementType
+ */
 
-## Lint-able vs Judgment Rules
+/** @type {Array<[type: BoundaryElementType, pattern: string]>} */
+const boundaryElements = [
+  ["end-user:pages", "src/pages"],
+  ["end-user:widgets", "src/widgets"],
+  ["domain:parts", "src/parts"],
+  ["domain:features", "src/features"],
+  ["shared:ui", "src/ui"],
+  ["shared:utils", "src/utils"],
+  ["data:endpoints", "src/data/endpoints"],
+  ["data:schemas", "src/data/schemas"],
+  ["data:adapters", "src/data/adapters"],
+  ["data:contracts", "src/data/contracts"],
+];
 
-Separate rules before implementation.
+/** @type {Record<BoundaryElementType, BoundaryElementType[]>} */
+const boundaryDependencies = {
+  "end-user:pages": [
+    "end-user:pages",
+    "end-user:widgets",
+    "domain:parts",
+    "domain:features",
+    "shared:ui",
+    "shared:utils",
+    "data:endpoints",
+    "data:schemas",
+    "data:adapters",
+    "data:contracts",
+  ],
+  "end-user:widgets": [
+    "end-user:widgets",
+    "domain:parts",
+    "domain:features",
+    "shared:ui",
+    "shared:utils",
+    "data:endpoints",
+    "data:schemas",
+    "data:adapters",
+    "data:contracts",
+  ],
+  "domain:parts": [
+    "domain:parts",
+    "domain:features",
+    "shared:ui",
+    "shared:utils",
+    "data:schemas",
+    "data:contracts",
+  ],
+  "domain:features": [
+    "domain:features",
+    "shared:ui",
+    "shared:utils",
+    "data:schemas",
+    "data:contracts",
+  ],
+  "shared:ui": ["shared:ui", "shared:utils"],
+  "shared:utils": ["shared:utils"],
+  "data:endpoints": ["data:endpoints", "data:schemas"],
+  "data:schemas": ["data:schemas"],
+  "data:adapters": [
+    "data:adapters",
+    "data:endpoints",
+    "data:schemas",
+    "data:contracts",
+  ],
+  "data:contracts": ["data:contracts", "data:schemas"],
+};
 
-Usually lint-able:
+export default [
+  {
+    ...boundaries.configs.recommended,
+    files: ["src/**/*.{js,jsx,ts,tsx}"],
+    plugins: { boundaries },
+    settings: {
+      ...boundaries.configs.recommended.settings,
+      "boundaries/elements": boundaryElements.map(([type, pattern]) => ({
+        type,
+        pattern,
+        partialMatch: false,
+      })),
+    },
+    rules: {
+      ...boundaries.configs.recommended.rules,
+      "boundaries/dependencies": [
+        "error",
+        {
+          default: "disallow",
+          checkAllOrigins: false,
+          policies: Object.entries(boundaryDependencies).map(
+            ([type, dependencies]) => ({
+              from: { element: { type } },
+              allow: { to: { element: { type: dependencies } } },
+            }),
+          ),
+        },
+      ],
+    },
+  },
+];
+```
 
-- Real folder/path import direction.
-- Forbidden imports from lower-level folders to higher-level folders.
-- Data execution access limited to selected directories.
-- Restricted package imports in selected folders.
+## Adaptation Rules
 
-Usually not fully lint-able:
+- Map each approved directory role to `<abstract-layer>:<project-role>`, such as `domain:features`.
+- Allow only approved complete element types and keep `default: "disallow"`; a shared layer prefix grants no dependency permission.
+- Keep Data execution and contract paths separate when consumers have different permissions. Restrict which consumers may import generated OpenAPI paths; do not govern what generated files may import.
+- Do not add unapproved directories or exceptions. When using another enforcement tool, preserve the same mapping and default-deny principle.
 
-- Whether a component is general-purpose UI or domain-aware UI.
-- Whether code encodes business rules indirectly.
-- Whether a custom hook hides too much flow control.
-- Whether a type-only import leaks higher-level context.
+## Enforcement Limits
 
-Keep judgment-heavy rules in architecture documentation or code review guidance. Do not pretend they are fully enforced by lint rules.
+Enforce only statically detectable path, import, and package boundaries. Responsibility-level distinctions—such as whether UI is domain-aware or a hook hides orchestration—remain documentation and review rules. Passing lint does not prove architectural correctness.
 
-## Implementation Checklist
+## Verification
 
-1. Confirm the user wants tool enforcement, not only documentation.
-2. Check the package manager.
-3. Check whether ESLint uses flat config or legacy config.
-4. Check existing lint scripts and current lint failures.
-5. Check current documentation for selected ESLint/plugin syntax before editing.
-6. Encode only approved real directories and import directions.
-7. Do not include directories that were not selected or mapped.
-8. Do not define what generated outputs may import; define only which layers may import approved generated-output paths, such as OpenAPI generated outputs.
-9. Run lint after configuration.
-10. If architecture documentation exists, add only a short note that selected rules are tool-enforced. Do not put setup details in the architecture document.
+1. Run the project's existing lint command before editing to establish the baseline.
+2. Apply the adapted configuration, then run the same command again.
+3. When the project has a suitable fixture convention, verify one forbidden import is rejected and one approved import remains valid.
 
-If the user declines tool enforcement, do not configure tools and do not add an absence note to documentation.
-
-## Output Rules
-
-When reporting or proposing enforcement:
-
-- State the rule source used.
-- State which rules are tool-enforced.
-- State which rules remain human-judgment rules.
-- State any directories or rules intentionally omitted because they were not approved or not lint-able.
+If architecture documentation exists, add only a short note that selected dependency rules are enforced by `eslint-plugin-boundaries`. Keep setup details in lint configuration.

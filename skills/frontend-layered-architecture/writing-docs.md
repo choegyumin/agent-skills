@@ -123,7 +123,7 @@ The examples above show document shape only. Replace the directory names and rul
 
 ## Enforcement Note
 
-If architecture rules are enforced by ESLint, CI, or another tool, record only one short sentence or bullet in the dependency rules. Do not include configuration or setup details in the project document.
+If architecture rules are enforced by `eslint-plugin-boundaries`, record only one short sentence or bullet in the dependency rules. If the project uses another enforcement tool, name that tool instead. Do not include configuration or setup details in the project document.
 
 ## After Writing
 
