@@ -1,4 +1,4 @@
-# Greenfield Project Frontend Architecture Flow
+# New Project (Greenfield) Frontend Architecture Flow
 
 Use this file when there is no existing frontend directory/layer structure and the user has not specified one.
 
@@ -18,7 +18,7 @@ This file is a router, not a table of contents.
 - If required design decisions are incomplete, read `greenfield-ask.md` before asking anything.
 - If the top-level structure and dependency direction are not approved, read `greenfield-propose.md` before proposing anything.
 - Do not create files, change settings, or write documentation before the user approves that action. A target document alone is not approval to write or update it.
-- In existing codebases, ignore this flow unless the user explicitly asks to use it.
+- In existing codebases, use `brownfield.md`; do not use this flow.
 - Do not use this flow as a best-practice reference for existing project judgments.
 
 ## Step Routing

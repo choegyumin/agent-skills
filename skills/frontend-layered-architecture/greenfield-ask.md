@@ -1,4 +1,4 @@
-# Greenfield Project Ask Step
+# New Project (Greenfield) Ask Step
 
 Use this file only to collect the next unresolved user decision for a new frontend project structure.
 

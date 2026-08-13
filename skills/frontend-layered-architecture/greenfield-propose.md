@@ -1,4 +1,4 @@
-# Greenfield Project Propose Step
+# New Project (Greenfield) Propose Step
 
 Use this file only after the required design decisions are answered and before the top-level structure is approved.
 
@@ -42,7 +42,7 @@ Apply selected options before presenting the final proposal:
 | `parts` | Domain-aware UI presentation | Domain | The lowest-level components that express domain language as UI. They understand business requirements or context but do not depend on external services, so direct access to external data or state such as API calls, queries, routers, and stores is not allowed. Example: `<ProductCard name={product.name} />`. |
 | `features` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain | Reusable business rules, validation, calculations, and feature flags. They exclude API calls and external service access. Compose `features` from pure functions, modules, types, and constants. Examples: `canBuyProduct(product)`, `isBetaEnabled(user)`. |
 | `ui` | General-purpose UI presentation | Shared | Pure general-purpose UI components similar to a design system. Examples: `<Button />`, `<Switch />`. |
-| `utils` | General-purpose utility logic | Shared | General-purpose utilities such as pure functions, browser built-in API extensions, and general-purpose React custom hooks. |
+| `utils` | General-purpose utility logic | Shared | General-purpose utilities and wrappers that receive application-specific state, policy, and actions through parameters. |
 | `data` | Data | Data | External data contracts and access boundary. |
 | `data/endpoints` | Data | Data | API request execution and Query/Mutation Options. |
 | `data/schemas` | Data | Data | API Request/Response and DTO types. |
@@ -85,9 +85,9 @@ Rules:
 | `toDisplayDate(date)` | `ui/` | Formatting depends on design-system display rules |
 | `canBuyProduct(product)` | `features/` |  |
 | `isNullableOrEmpty(value)` | `utils/` |  |
-| `getProductsAPI()` | `data/endpoints/` |  |
-| `getProducts()` | `data/adapters/` |  |
-| `productsQueryOptions()` | `data/endpoints/` or `data/adapters/` | Declare alongside the regular function it uses. |
+| `getProductsAPI(payload)` | `data/endpoints/` |  |
+| `getProducts(payload)` | `data/adapters/` |  |
+| `productsQueryOptions(payload)` | `data/endpoints/` or `data/adapters/` | Declare alongside the regular function it uses. |
 | `toProductFromProductDTO(dto)` | `data/contracts/` or `features/` | Use `data/contracts/` only for external DTO adaptation; keep Domain models and business rules in `features/`. |
 
 ## Structure Proposal Rules

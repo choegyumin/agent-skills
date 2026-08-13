@@ -2,7 +2,7 @@
 
 Use this file as a boundary reference when the main routed document cannot settle placement or import direction from direct dependencies and responsibility, or as a secondary Common Mistakes checklist during broad existing project architecture audits.
 
-Do not use this file as a directory template, greenfield proposal, or reason to reshape an existing project. Prefer the project’s documented structure and current conventions. During broad audits, check the Common Mistakes table first; read examples only if a specific boundary remains unclear.
+Do not use this file as a directory template, greenfield proposal, or reason to reshape an existing project. Prefer intentional project architecture; do not treat repeated placement as authority. During broad audits, check the Common Mistakes table first; read examples only if a specific boundary remains unclear.
 
 ## Example Directory Role Map (Not a Template)
 
@@ -110,8 +110,12 @@ Bad:
 
 ```tsx
 // parts/ProductCard.tsx (Domain)
-function ProductCard({ outOfStock, stock }: Partial<ProductSummary, "outOfStock"> | Partial<ProductDetail, "stock">) {
-  const soldout = outOfStock || stock < 0;
+type ProductCardProps =
+  | ProductSummary  // outOfStock
+  | ProductDetail   // stock
+
+function ProductCard(props: ProductCardProps) {
+  const soldout = "outOfStock" in props ? props.outOfStock : props.stock < 0;
   return <Chip>{soldout ? "Sold Out" : "In Stock"}</Chip>;
 }
 
@@ -181,8 +185,17 @@ Safer approach:
 
 ```tsx
 // utils/useNavigationBlocker.ts (Shared)
-type UseNavigationBlockerOptions = { shouldBlock: boolean; confirm: () => Promise<boolean>; onProceed: () => void };
-function useNavigationBlocker({ shouldBlock, confirm, onProceed }: UseNavigationBlockerOptions) {
+type UseNavigationBlockerOptions = {
+  shouldBlock: boolean;
+  confirm: () => Promise<boolean>;
+  onProceed: () => void;
+};
+
+function useNavigationBlocker({
+  shouldBlock,
+  confirm,
+  onProceed,
+}: UseNavigationBlockerOptions) {
   // ...
 }
 
@@ -204,6 +217,7 @@ function ProductEditor() {
 
 - Move dependencies that the component should own back into the component.
 - Refactor according to the remaining responsibility of the custom hook.
+- A router primitive wrapper remains Shared when state, policy, and actions are injected; move it to End-User only when it interprets application routes or decides navigation policy.
 
 ## Common Mistakes
 

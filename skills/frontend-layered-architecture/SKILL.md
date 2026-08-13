@@ -11,7 +11,9 @@ Frontend directory structures should not collapse into “pages and everything e
 
 Code should be separated into layers by role, dependency, external data boundary, and orchestration responsibility. Lower-level code must not be made aware of higher-level context.
 
-This skill does not enforce a specific methodology such as Feature-Sliced Design, Vertical Slice Architecture. Type-based, feature-based, domain-driven, and other directory structures can all be valid. What matters is whether roles and dependency direction are clear within the structure the project has chosen, whether external data contracts are isolated, and whether code responsibilities and frontend-owned domain logic are managed effectively.
+This skill does not enforce a specific methodology such as Feature-Sliced Design or Vertical Slice Architecture. Type-based, feature-based, domain-driven, and other directory structures can all be valid. What matters is whether roles and dependency direction are clear within the structure the project has chosen, whether external data contracts are isolated, and whether code responsibilities and frontend-owned domain logic are managed effectively.
+
+In an existing project, treat architecture as intentional only when it is documented, user-approved, or consistently recognizable through role, dependency, and Data boundaries. Otherwise, apply this skill's baseline to new and changed code instead of treating repeated placement as authority.
 
 ## Common Foundation
 
@@ -38,13 +40,15 @@ Minimum guards:
 
 - Layer names are abstract concepts, not required folder names.
 - Shared is determined by code-level independence, not by generic names or absence of domain words. For example, `ProductCard` can be Shared if it only renders injected props, while a generic-looking `buildSearchParams` is not Shared if it knows router state, API request parameters, store state, or business rules.
+- A general-purpose wrapper around a browser, router, form, or other library primitive can remain Shared when application-specific state, policy, and actions are injected. Judge the application context the code knows, not the package it imports.
 - Data means a boundary the frontend consumes like externally-owned code; it does not mean the file must be physically external or written by another team. For example, OpenAPI-generated client/schema code and manually written API endpoint/schema code are both Data when the frontend consumes them as external contracts.
+- Judge which project modules Data may depend on from its actual implementation instead of assigning one universal inward dependency rule.
 - Even within the same abstract layer, dependency validity depends on role and responsibility. For example, if a project maps both `features` and `widgets` to Domain, `features` may still be forbidden from importing UI orchestration in `widgets`.
 - When a project has documented or approved folder roles, use those roles first. Map them to abstract layers only to check whether responsibility or dependency direction is being violated; do not replace approved roles with current file names, sparse folders, or polluted usage.
 
 ## Purpose Router
 
-Before acting, classify the user’s purpose in one sentence, then read the first matching document. Do not use this file as a substitute for the routed document.
+Classify the user’s purpose in one sentence, then read the first matching document. Do not use this file as a substitute for the routed document.
 
 | User purpose | Read |
 | --- | --- |
@@ -60,6 +64,6 @@ Routing rules:
 - If a request has multiple purposes, route to the purpose that controls the next user-visible action. Example: “configure ESLint from architecture rules” routes to `enforcing-rules.md`, not directly to general structure judgment.
 - After reading the routed document, check whether it directly answers the user’s purpose. If not, say what is missing and route to the next required source instead of pretending the skill contains the answer.
 - In existing codebases, do not read `greenfield.md` unless the user explicitly asks for a new structure flow.
-- For brownfield decisions, use the unresolved-placement fallback at the end of `brownfield.md`.
+- Read the `brownfield.md` file when making decisions regarding existing codebases.
 - For broad existing project audits or evaluations, read `brownfield.md` first, then check only the Common Mistakes table in `best-practices.md` as a secondary checklist. Do not apply examples as templates or override project-specific rules.
 - For specific placement/import decisions or implementation work, do not read `best-practices.md` by default.

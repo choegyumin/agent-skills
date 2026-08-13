@@ -17,11 +17,11 @@ Before writing or proposing rules, identify the source of truth:
 1. Project architecture document, such as `docs/architecture.md`.
 2. Explicit user-approved directory/layer mapping.
 3. Existing lint rules or import conventions.
-4. Existing project structure, only when no stronger source exists.
+4. Existing project structure, only when `brownfield.md` has established that the relevant design is intentional and no stronger source exists.
 
 Do not invent lint rules from abstract layer names alone. End-User, Domain, Shared, and Data are abstract concepts, not enforceable folder names unless the project maps them to real directories.
 
-If there is no project document or explicit mapping, first establish the mapping through `brownfield.md` or a user-approved architecture document before enforcing it.
+Without a project document or explicit mapping, enforce only the intentional mapping or Brownfield baseline established through `brownfield.md`.
 
 ## Lint-able vs Judgment Rules
 

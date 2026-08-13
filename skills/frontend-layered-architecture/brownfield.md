@@ -1,4 +1,4 @@
-# Brownfield Project Structure Judgment
+# Existing Project (Brownfield) Structure Judgment
 
 Use this file for existing frontend projects when deciding layer, role, file placement, extraction, import direction, or dependency boundaries.
 
@@ -16,17 +16,26 @@ Immediately before any of the following frontend changes, stop and check roles a
 
 This checkpoint does not mean you must explain structure at length. If there is no boundary problem, apply it silently and continue. Only when a boundary may be broken should you briefly state the reason and the safe alternative.
 
+## Read Before Following
+
+- In a new project with no existing frontend structure, use [`greenfield.md`](./greenfield.md); do not use this flow.
+
 ## What to Check
 
-1. Are there explicit rules in `AGENTS.md`, `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `docs/architecture.md`, or other docs, the current directory structure, or lint rules?
-2. Which layer is this code closest to? End-User, Domain, Shared, or Data?
-3. What role does this code have? API, UI, business rule, utility, mapper, adapter, route orchestration, etc.
-4. Even within the same abstract layer, are there role-based dependency directions that should be disallowed?
-5. If this code is placed in a lower-level role folder, will that folder learn higher-level context?
-6. Are external data contracts and frontend-owned business rules mixed in the same file or code?
-7. Does any import, including `import type`, cross an invalid dependency direction?
-8. Is this code being placed in `components`, `hooks`, `models`, `utils`, `shared`, or a similar location only because it is reusable?
-9. If rules already exist, what placement respects those rules while avoiding worse dependency direction within the current scope?
+1. Are there explicit architecture rules in `AGENTS.md`, `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `docs/architecture.md`, other project documents, lint rules, or user instructions?
+   - If yes, treat those rules as intentional. Inspect the current structure to determine how the rules are mapped, not whether the rules exist.
+2. If explicit rules are absent, are role boundaries, dependency direction, and external data boundaries consistently recognizable across relevant code?
+   - If yes, treat the existing design as intentional and continue.
+   - If no, read [`brownfield-guidelines.md`](./brownfield-guidelines.md) before making placement decisions.
+   - Folder names, repeated placement, and existing imports are evidence, not authority. Mixed responsibilities, contradictory import directions, or absent Data boundaries indicate unstructured code.
+3. Which layer is this code closest to? End-User, Domain, Shared, or Data?
+4. What role does this code have? API, UI, business rule, utility, mapper, adapter, route orchestration, etc.
+5. Even within the same abstract layer, are there role-based dependency directions that should be disallowed?
+6. If this code is placed in a lower-level role folder, will that folder learn higher-level context?
+7. Are external data contracts and frontend-owned business rules mixed in the same file or code?
+8. Does any import, including `import type`, cross an invalid dependency direction?
+9. Is this code being placed in `components`, `hooks`, `models`, `utils`, `shared`, or a similar location only because it is reusable?
+10. If rules already exist, what placement respects those rules while avoiding worse dependency direction within the current scope?
 
 ## Role Classification Criteria
 
@@ -43,7 +52,7 @@ Configuration files, assets, and other project setup files are not frontend laye
 | Business rules, validation, calculations, and feature flags, such as `canBuyProduct(product)` or `isBetaEnabled(user)` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain |
 | Components that render UI only from props but directly express business requirements in code | Domain-aware UI presentation | Domain |
 | Components that render UI only from props and do not directly read external data | General-purpose UI presentation | Shared |
-| Utility functions/modules, browser API wrappers | General-purpose utility logic | Shared |
+| Utility modules and general-purpose wrappers whose application-specific state, policy, and actions are injected | General-purpose utility logic | Shared |
 | API endpoint calls, API schemas, Query/Mutation Options, content collection query modules | External data contracts and execution | Data |
 
 ## Default Choices When Ambiguous
@@ -51,23 +60,26 @@ Configuration files, assets, and other project setup files are not frontend laye
 - Keep code next to its caller. If there are multiple callers, place it in the layer of the nearest caller. Hidden dependencies are more dangerous than longer caller code, so placing code in a lower layer requires stronger justification.
 - Unless the user explicitly instructs that a component should take on a higher-layer role, or unless there is a requirement for it to work independently, treat it as general-purpose UI. In that case, pass data through props.
 - Treat `import type` as a dependency when judging direction. If a lower layer needs a type from a higher layer, ask whether that type actually belongs lower or should be converted at a higher boundary.
-- If the existing structure is polluted, do not choose a large structural change. Pick the smallest placement that avoids adding new pollution in the current change. Still mention the pollution briefly.
+- If the relevant structure has mixed responsibilities, contradictory dependency directions, or no recognizable external data boundary, read [`brownfield-guidelines.md`](./brownfield-guidelines.md) instead of treating repeated placement as architecture authority.
 
 ## Existing Codebase Attitude
 
-Follow the existing structure and import conventions first, even when there are no explicit rules.
+Follow the existing structure and import conventions first when the existing design is intentional.
 
-- If you cannot introduce a new layer folder, choose a narrow namespace folder or consistent filename pattern already present in the existing structure.
-- If the structure is ambiguous, preserve existing placement as much as possible, but do not make new code in lower-level roles learn higher-level context.
-- This is a minimal compromise for existing structures, not the default for new projects.
+- If the structure is intentional but cannot introduce a new layer folder, choose a narrow namespace folder or consistent filename pattern already present in the existing structure.
+- If the structure is intentional but ambiguous, preserve existing placement as much as possible, but do not make new code in lower-level roles learn higher-level context.
+- This is a minimal compromise for intentional existing structures, not the default for new projects or unstructured existing projects.
 - If the user specifies a frontend directory/layer structure, follow that structure first, but verify whether it satisfies domain abstraction, isolated external data contracts, and valid dependency direction.
-- In existing codebases, ignore `greenfield.md` and do not introduce a new structure unless the user asks.
+- In existing codebases with intentional architecture, ignore `greenfield.md` and do not introduce a new structure unless the user asks.
 
 ## Pressure Rules
 
 Stop and reconsider placement and dependency direction when you see bad signals:
 
 - Type-based folders such as `components`, `hooks`, `models`, or `utils` contain “everything except pages.”
+- A feature namespace such as `features/<slug>` contains its page flow, API execution, business rules, store, and reusable UI without dependency boundaries between those roles.
+- Files are grouped only by route or screen, with API contracts, business rules, orchestration, and presentation kept together in each screen folder.
+- A generic `shared/` or `common/` directory acts as a dumping ground for unrelated API clients, stores, business rules, hooks, and UI.
 - Business rules, API contracts, URL state, or query logic are placed where the code looks shared.
 - Code with different roles is mixed in the same folder or file only because it is convenient.
 - External data contracts and frontend-owned code are mixed in the same folder or file.
@@ -84,7 +96,8 @@ Minimum line to hold under pressure:
 | Situation | Action |
 | --- | --- |
 | Project rules exist | Follow them. |
-| Existing project with unclear rules | Preserve existing structure, but do not worsen dependency direction. |
+| Existing project with intentional but undocumented structure | Preserve existing structure, but do not worsen dependency direction. |
+| Existing project with no recognizable intentional design | Read `brownfield-guidelines.md` and apply its baseline rules to new and changed code. |
 | Adding a feature to an existing type-based structure | Do not scatter it flatly at the root; group it narrowly by feature namespace or prefix at minimum. |
 | A lower-level UI, utility, hook, or shared role starts reading external data or business rules | Stop and check ownership. Prefer props-based UI plus business-rule or data-access logic in an appropriate higher-level role. |
 | File placement or import direction is ambiguous | Judge by the context the code directly depends on, not by reusability. |
