@@ -10,13 +10,14 @@ Use `eslint-plugin-boundaries` unless the project already uses another suitable 
 
 Before editing:
 
-- Add the plugin with the project package manager if it is not installed.
-- Check the installed plugin version and current documentation.
-- Preserve the project's lint runner and configuration style. Adapt the reference syntax to the installed version instead of silently upgrading it.
+- Identify the project's linter or boundary-enforcement package and its installed version.
+- Check the current official documentation or Context7 for setup instructions applicable to the selected tool and installed version. Configuration differs across ESLint, Oxlint, other tools, and package versions.
+- Add `eslint-plugin-boundaries` with the project package manager if it is selected and not installed.
+- Preserve the project's lint runner and configuration style. Adapt the reference syntax to the selected tool and installed version instead of silently upgrading or replacing them.
 
 ## Reference Flat Config
 
-This complete example uses the current flat-config API and covers the maximum Greenfield structure from `greenfield-propose.md`: OpenAPI generation is not used and the API adapter pattern is selected. It assumes each directory role groups code into child namespaces. Replace it with the approved project directories, grouping convention, and dependency directions. Omit unselected optional directories and map generated OpenAPI client/schema paths when generation is selected.
+This complete example targets ESLint v10 and `eslint-plugin-boundaries` v7.2. It covers the maximum Greenfield structure from `greenfield-propose.md`: OpenAPI generation is not used and the API adapter pattern is selected. It assumes each directory role groups code into child namespaces. Replace it with the approved project directories, grouping convention, and dependency directions. Omit unselected optional directories and map generated OpenAPI client/schema paths when generation is selected.
 
 ```js
 import boundaries from "eslint-plugin-boundaries";
@@ -37,37 +38,43 @@ const boundaryLayers = [
     type: "end-user:page",
     pattern: "src/pages/*",
     relationships: ["internal"],
-    dependencies: ["end-user:widget", "domain:part", "domain:feature", "shared:ui", "shared:utility", "data:endpoint", "data:schema", "data:adapter", "data:contract"],
+    dependencies: ["end-user:widget", "domain:part", "domain:feature", "shared:ui", "shared:util", "data:adapter", "data:endpoint", "data:contract", "data:schema"],
   },
   {
     type: "end-user:widget",
     pattern: "src/widgets/*",
     relationships: ["internal"],
-    dependencies: ["domain:part", "domain:feature", "shared:ui", "shared:utility", "data:endpoint", "data:schema", "data:adapter", "data:contract"],
+    dependencies: ["domain:part", "domain:feature", "shared:ui", "shared:util", "data:adapter", "data:endpoint", "data:contract", "data:schema"],
   },
   {
     type: "domain:part",
     pattern: "src/parts/*",
     relationships: ["internal", "sibling"],
-    dependencies: ["domain:feature", "shared:ui", "shared:utility", "data:schema", "data:contract"],
+    dependencies: ["domain:feature", "shared:ui", "shared:util", "data:contract", "data:schema"],
   },
   {
     type: "domain:feature",
     pattern: "src/features/*",
     relationships: ["internal", "sibling"],
-    dependencies: ["shared:ui", "shared:utility", "data:schema", "data:contract"],
+    dependencies: ["shared:ui", "shared:util", "data:contract", "data:schema"],
   },
   {
     type: "shared:ui",
     pattern: "src/ui/*",
     relationships: ["internal", "sibling"],
-    dependencies: ["shared:utility"],
+    dependencies: ["shared:util"],
   },
   {
-    type: "shared:utility",
+    type: "shared:util",
     pattern: "src/utils/*",
     relationships: ["internal", "sibling"],
     dependencies: [],
+  },
+  {
+    type: "data:adapter",
+    pattern: "src/data/adapters/*",
+    relationships: ["internal", "sibling"],
+    dependencies: ["data:endpoint", "data:contract", "data:schema"],
   },
   {
     type: "data:endpoint",
@@ -76,22 +83,16 @@ const boundaryLayers = [
     dependencies: ["data:schema"],
   },
   {
-    type: "data:schema",
-    pattern: "src/data/schemas/*",
-    relationships: ["internal", "sibling"],
-    dependencies: [],
-  },
-  {
-    type: "data:adapter",
-    pattern: "src/data/adapters/*",
-    relationships: ["internal", "sibling"],
-    dependencies: ["data:endpoint", "data:schema", "data:contract"],
-  },
-  {
     type: "data:contract",
     pattern: "src/data/contracts/*",
     relationships: ["internal", "sibling"],
     dependencies: ["data:schema"],
+  },
+  {
+    type: "data:schema",
+    pattern: "src/data/schemas/*",
+    relationships: ["internal", "sibling"],
+    dependencies: [],
   },
 ];
 
@@ -136,7 +137,6 @@ export default [
                         allow: { to: { element: { type: dependencies } } },
                       },
                     ];
-
               return [relationshipPolicy, ...dependencyPolicies];
             },
           ),
