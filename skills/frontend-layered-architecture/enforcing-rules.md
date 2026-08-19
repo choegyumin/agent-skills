@@ -17,84 +17,95 @@ Before editing:
 
 ## Reference Flat Config
 
-This complete example targets ESLint v10 and `eslint-plugin-boundaries` v7.2. It covers the maximum Greenfield structure from `greenfield-propose.md`: OpenAPI generation is not used and the API adapter pattern is selected. It assumes each directory role groups code into child namespaces. Replace it with the approved project directories, grouping convention, and dependency directions. Omit unselected optional directories and map generated OpenAPI client/schema paths when generation is selected.
+This complete example targets ESLint v10 and `eslint-plugin-boundaries` v7.2. It shows all Greenfield layer roles while representing each Data role as one file for a compact reference. It assumes each element role groups code into child namespaces. Replace it with the approved project paths, grouping convention, and dependency directions. Omit unselected roles and map generated OpenAPI paths when generation is selected.
 
 ```js
+import { posix as path } from "node:path";
+
 import boundaries from "eslint-plugin-boundaries";
 
 /**
- * @typedef {string} BoundaryElementType
+ * @typedef {"element" | "file"} BoundaryKind
+ * @typedef {string} BoundaryType
  * @typedef {"internal" | "child" | "parent" | "descendant" | "ancestor" | "sibling" | "uncle" | "nephew"} BoundaryRelationship
  * @typedef {object} BoundaryLayer
- * @property {BoundaryElementType} type
+ * @property {BoundaryKind} kind
+ * @property {BoundaryType} type
  * @property {string} pattern
- * @property {BoundaryRelationship[]} relationships
- * @property {BoundaryElementType[]} dependencies
+ * @property {BoundaryRelationship[]} [relationships]
+ * @property {BoundaryType[]} dependencies
  */
 
 /** @type {BoundaryLayer[]} */
 const boundaryLayers = [
   {
+    kind: "element",
     type: "end-user:page",
-    pattern: "src/pages/*",
+    pattern: "src/pages",
     relationships: ["internal"],
     dependencies: ["end-user:widget", "domain:part", "domain:feature", "shared:ui", "shared:util", "data:adapter", "data:endpoint", "data:contract", "data:schema"],
   },
   {
+    kind: "element",
     type: "end-user:widget",
-    pattern: "src/widgets/*",
-    relationships: ["internal"],
+    pattern: "src/widgets",
+    relationships: ["internal", "sibling"],
     dependencies: ["domain:part", "domain:feature", "shared:ui", "shared:util", "data:adapter", "data:endpoint", "data:contract", "data:schema"],
   },
   {
+    kind: "element",
     type: "domain:part",
-    pattern: "src/parts/*",
+    pattern: "src/parts",
     relationships: ["internal", "sibling"],
     dependencies: ["domain:feature", "shared:ui", "shared:util", "data:contract", "data:schema"],
   },
   {
+    kind: "element",
     type: "domain:feature",
-    pattern: "src/features/*",
+    pattern: "src/features",
     relationships: ["internal", "sibling"],
     dependencies: ["shared:ui", "shared:util", "data:contract", "data:schema"],
   },
   {
+    kind: "element",
     type: "shared:ui",
-    pattern: "src/ui/*",
+    pattern: "src/ui",
     relationships: ["internal", "sibling"],
     dependencies: ["shared:util"],
   },
   {
+    kind: "element",
     type: "shared:util",
-    pattern: "src/utils/*",
-    relationships: ["internal", "sibling"],
+    pattern: "src/utils",
+    relationships: ["internal", "sibling", "child", "descendant"],
     dependencies: [],
   },
   {
+    kind: "file",
     type: "data:adapter",
-    pattern: "src/data/adapters/*",
-    relationships: ["internal", "sibling"],
+    pattern: "src/data/adapters.ts",
     dependencies: ["data:endpoint", "data:contract", "data:schema"],
   },
   {
+    kind: "file",
     type: "data:endpoint",
-    pattern: "src/data/endpoints/*",
-    relationships: ["internal", "sibling"],
+    pattern: "src/data/endpoints.ts",
     dependencies: ["data:schema"],
   },
   {
+    kind: "file",
     type: "data:contract",
-    pattern: "src/data/contracts/*",
-    relationships: ["internal", "sibling"],
+    pattern: "src/data/contracts.ts",
     dependencies: ["data:schema"],
   },
   {
+    kind: "file",
     type: "data:schema",
-    pattern: "src/data/schemas/*",
-    relationships: ["internal", "sibling"],
+    pattern: "src/data/schemas.ts",
     dependencies: [],
   },
 ];
+const boundaryKinds = Object.fromEntries(boundaryLayers.map(({ kind, type }) => [type, kind]));
 
 export default [
   {
@@ -103,11 +114,16 @@ export default [
     plugins: { boundaries },
     settings: {
       ...boundaries.configs.recommended.settings,
-      "boundaries/elements": boundaryLayers.map(({ type, pattern }) => ({
-        type,
-        pattern,
-        partialMatch: false,
-      })),
+      "boundaries/elements-single-match": false,
+      "boundaries/elements": boundaryLayers
+        .filter(({ kind }) => kind === "element")
+        .flatMap(({ type, pattern }) => [
+          { type, partialMatch: false, pattern: path.join(pattern, "*") },
+          { type, partialMatch: false, pattern: path.join(pattern, "**") },
+        ]),
+      "boundaries/files": boundaryLayers
+        .filter(({ kind }) => kind === "file")
+        .map(({ type, pattern }) => ({ category: type, pattern })),
     },
     rules: {
       ...boundaries.configs.recommended.rules,
@@ -116,28 +132,37 @@ export default [
         {
           default: "disallow",
           checkAllOrigins: false,
-          checkInternals: boundaryLayers.some(
-            ({ relationships }) => !relationships.includes("internal"),
-          ),
+          checkInternals: boundaryLayers
+            .filter(({ kind }) => kind === "element")
+            .some(({ relationships = [] }) => !relationships.includes("internal")),
           policies: boundaryLayers.flatMap(
-            ({ type, relationships, dependencies }) => {
-              const relationshipPolicy = {
-                from: { element: { type } },
-                allow: {
-                  to: { element: { type } },
-                  dependency: { relationship: { to: relationships } },
+            ({ kind, type, relationships = [], dependencies: rawDependencies }) => {
+              const elementDependencies = rawDependencies.filter((dependency) => boundaryKinds[dependency] === "element");
+              const fileDependencies = rawDependencies.filter((dependency) => boundaryKinds[dependency] === "file");
+              const dependencies = [
+                ...(elementDependencies.length > 0 ? [{ element: { type: elementDependencies } }] : []),
+                ...(fileDependencies.length > 0 ? [{ file: { categories: { anyOf: fileDependencies } } }] : []),
+              ];
+
+              const from = kind === "element"
+                ? { element: { type } }
+                : { file: { categories: type } };
+
+              return [
+                // Relationships Policy
+                kind === "element" && {
+                  from,
+                  allow: {
+                    to: { element: { type } },
+                    dependency: { relationship: { to: relationships } },
+                  },
                 },
-              };
-              const dependencyPolicies =
-                dependencies.length === 0
-                  ? []
-                  : [
-                      {
-                        from: { element: { type } },
-                        allow: { to: { element: { type: dependencies } } },
-                      },
-                    ];
-              return [relationshipPolicy, ...dependencyPolicies];
+                // Dependencies Policy
+                dependencies.length > 0 && {
+                  from,
+                  allow: { to: dependencies },
+                },
+              ].filter(Boolean);
             },
           ),
         },
@@ -149,8 +174,10 @@ export default [
 
 ## Adaptation Rules
 
-- Map each approved directory role to `<abstract-layer>:<project-role>`, such as `domain:feature`, and keep its pattern, allowed dependency types, and namespace relationships in one boundary entry.
-- Model each child namespace as its own element. Use `relationships: ["internal"]` when only imports within the same namespace are allowed, or add `"sibling"` when namespaces of the same role may import each other. Internal imports are checked only when at least one boundary omits `"internal"`. Adapt the pattern to the approved grouping convention when namespaces are not child directories.
+- Map each approved role to `<abstract-layer>:<project-role>`, such as `domain:feature`, and keep its `kind`, pattern, allowed dependency types, and namespace relationships in one boundary entry.
+- For element entries, use `path.join(pattern, "*")` to create child namespace elements and `path.join(pattern, "**")` to supply their shared parent. Keep `"boundaries/elements-single-match": false` so both descriptors participate in the element hierarchy.
+- For file entries, use the exact pattern in `boundaries/files`; do not append element wildcards. Source and target permissions use file categories instead of element types.
+- Use `relationships: ["internal"]` when only imports within the same namespace are allowed, or add `"sibling"` when namespaces of the same role may import each other. Internal imports are checked only when at least one element boundary omits `"internal"`. The shared-parent descriptor also classifies files directly under the pattern as one directory-level element.
 - Allow only approved complete element types and keep `default: "disallow"`; a shared layer prefix grants no dependency permission.
 - Keep Data execution and contract paths separate when consumers have different permissions. Restrict which consumers may import generated OpenAPI paths; do not govern what generated files may import.
 - Do not add unapproved directories or exceptions. When using another enforcement tool, preserve the same mapping and default-deny principle.
