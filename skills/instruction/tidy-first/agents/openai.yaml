@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tidy First"
+policy:
+  allow_implicit_invocation: true
