@@ -180,6 +180,8 @@ export default [
 - Use `relationships: ["internal"]` when only imports within the same namespace are allowed, or add `"sibling"` when namespaces of the same role may import each other. Internal imports are checked only when at least one element boundary omits `"internal"`. The shared-parent descriptor also classifies files directly under the pattern as one directory-level element.
 - Allow only approved complete element types and keep `default: "disallow"`; a shared layer prefix grants no dependency permission.
 - Keep Data execution and contract paths separate when consumers have different permissions. Restrict which consumers may import generated OpenAPI paths; do not govern what generated files may import.
+- Keep Domain roles limited to Data contract/schema access by default. Use another direction only when established by documented or approved project rules, a consistently recognizable existing architecture, or an explicit user decision.
+- For a user-approved narrow exception, keep global default-deny and use a rule-specific inline disable such as `// eslint-disable-next-line boundaries/dependencies -- <reason>` on the affected import. If the user approves a project-wide direction, encode that rule instead of repeating inline disables.
 - Do not add unapproved directories or exceptions. When using another enforcement tool, preserve the same mapping and default-deny principle.
 
 ## Enforcement Limits

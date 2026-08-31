@@ -24,13 +24,13 @@ flowchart TB
   End-User --> Domain
   Domain --> Shared
   End-User --> Data
-  Domain -. schemas/types only .-> Data
+  Domain -. schemas/types by default .-> Data
 ```
 
 | Layer | Meaning |
 | --- | --- |
 | End-User | Screens delivered to users. The highest-level layer, such as pages and routes, where UI flow, data fetching, and orchestration are handled. |
-| Domain | Reusable business rules, validation, calculations, and feature flags, similar to Clean Architecture Entities and Use Cases. It excludes API calls and external service access. |
+| Domain | Reusable business rules, validation, calculations, and feature flags, similar to Clean Architecture Entities and Use Cases. In the baseline architecture recommended by this skill, Domain excludes API calls and external service access. |
 | Shared | Pure code that knows no external context. This is the lowest-level layer. |
 | Data | External data contracts and execution boundaries. API-related source code belongs here and is treated like frontend-consumed externally-owned code, even when frontend developers wrote it. |
 
@@ -42,6 +42,7 @@ Minimum guards:
 - Shared is determined by code-level independence, not by generic names or absence of domain words. For example, `ProductCard` can be Shared if it only renders injected props, while a generic-looking `buildSearchParams` is not Shared if it knows router state, API request parameters, store state, or business rules.
 - A general-purpose wrapper around a browser, router, form, or other library primitive can remain Shared when application-specific state, policy, and actions are injected. Judge the application context the code knows, not the package it imports.
 - Data means a boundary the frontend consumes like externally-owned code; it does not mean the file must be physically external or written by another team. For example, OpenAPI-generated client/schema code and manually written API endpoint/schema code are both Data when the frontend consumes them as external contracts.
+- Domain-to-Data access defaults to schemas/types only because declarative data fetching (e.g., `useQuery`-style APIs) keeps Data execution, caching, and synchronization in End-User UI orchestration. Do not replace this frontend default merely because another language or framework commonly uses a different direction. Follow another direction only when documented or approved project rules establish it, a consistently recognizable existing architecture already uses it, or the user explicitly decides it.
 - Judge which project modules Data may depend on from its actual implementation instead of assigning one universal inward dependency rule.
 - Even within the same abstract layer, dependency validity depends on role and responsibility. For example, if a project maps both `features` and `widgets` to Domain, `features` may still be forbidden from importing UI orchestration in `widgets`.
 - When a project has documented or approved folder roles, use those roles first. Map them to abstract layers only to check whether responsibility or dependency direction is being violated; do not replace approved roles with current file names, sparse folders, or polluted usage.
