@@ -1,19 +1,32 @@
 # Existing Project (Brownfield) Guidelines
 
-Use this file from [`brownfield.md`](./brownfield.md) when an existing frontend project has no documented or approved architecture rules and its design is not consistently recognizable.
+Use this file from [`brownfield.md`](./brownfield.md) in either case:
+
+- An existing frontend project has no documented or approved architecture rules, and its design is not consistently recognizable.
+- The existing design is intentional, and the user proposes or requests adding, removing, renaming, or reorganizing directories or directory roles.
+
+Do not use this file for ordinary placement inside an intentional structure when the user has not requested a structural change.
 
 ## Workflow
 
-1. Inspect current roles, dependency direction, and external data boundaries. Inspect enough relevant and adjacent code to distinguish a consistent design from an isolated file.
-2. If they are consistently recognizable, treat the existing design as intentional and return to `brownfield.md`.
-3. If responsibilities are mixed, imports run in contradictory directions, or no external data boundary is recognizable, apply the baseline architecture below.
-4. Preserve any existing directory that already serves the Data role. If none exists, create `data/`; do not impose a fixed child-directory structure inside it.
-5. Apply the baseline architecture to new and changed code in the current task.
-6. Do not migrate the entire existing codebase unless the user explicitly requests it.
-7. After applying the baseline, use `brownfield.md` for ordinary placement, extraction, and import decisions.
-8. Route documentation and tool enforcement to `writing-docs.md` and `enforcing-rules.md` when requested.
+### Intentional Structure Change
+
+1. Use documented or approved rules and consistently recognizable roles, dependency directions, and external data boundaries as the source of truth.
+2. Identify the requested directory or directory-role change, then check whether it preserves or clarifies those responsibilities and boundaries.
+3. Prefer existing terminology and structural patterns. Treat the references below as role and dependency checks, not mandatory directory names or a replacement architecture.
+4. Limit the work to the requested change and directly affected code. If part of the request breaks a boundary, reject only that part and give the smallest safe alternative.
+
+### Unstructured Project
+
+1. Inspect enough relevant and adjacent code to distinguish a consistent design from an isolated file. If roles and boundaries become recognizable, return to `brownfield.md`.
+2. Otherwise, apply the baseline below to new and changed code only. Do not migrate the entire codebase unless the user explicitly requests it.
+3. Preserve any existing directory that serves the Data role. If none exists, create `data/`; do not impose a fixed child-directory structure inside it.
+
+After either workflow, use `brownfield.md` for ordinary placement, extraction, and import decisions. Route documentation and tool enforcement to `writing-docs.md` and `enforcing-rules.md` when requested.
 
 ## Baseline Directory Structure
+
+Apply this directory structure only in the Unstructured Project workflow.
 
 ```txt
 src/
@@ -85,8 +98,12 @@ Rules:
 
 ## Response
 
-- State that the existing design is unstructured.
-- Show the baseline architecture.
-- Explain the dependency direction.
-- Identify the scope: new and changed code only, unless broader migration is explicitly requested.
-- Do not ask for approval before applying the baseline.
+### Intentional Structure Change
+
+- Explain only the affected roles, dependency direction, and external data boundaries in the project's terminology.
+- Limit the response to the requested change. Do not label the design unstructured or present baseline directory names as mandatory.
+
+### Unstructured Project
+
+- State that the design is unstructured, then show the baseline architecture and dependency direction.
+- Apply it to new and changed code only unless broader migration is explicitly requested. Do not ask for approval first.

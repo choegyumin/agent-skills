@@ -52,7 +52,7 @@ Classify the user’s purpose in one sentence, then read the first matching docu
 
 | User purpose | Read |
 | --- | --- |
-| Existing project structure judgment, file placement, file extraction, import direction, or dependency boundary decision | [`brownfield.md`](./brownfield.md) |
+| Existing project structure judgment or change, including directory addition, removal, renaming, or reorganization, file placement, file extraction, import direction, or dependency boundary decisions | [`brownfield.md`](./brownfield.md) |
 | New frontend project with no chosen directory/layer structure | [`greenfield.md`](./greenfield.md) |
 | Architecture documentation such as `docs/architecture.md`, directory rules, dependency rules, or Mermaid overview | [`writing-docs.md`](./writing-docs.md) |
 | `eslint-plugin-boundaries`, ESLint, CI, import boundaries, or other tool-based enforcement of architecture rules | [`enforcing-rules.md`](./enforcing-rules.md) |
@@ -63,7 +63,6 @@ Routing rules:
 - Choose the document by the user’s actual purpose, not by the first architecture keyword you notice.
 - If a request has multiple purposes, route to the purpose that controls the next user-visible action. Example: “configure ESLint from architecture rules” routes to `enforcing-rules.md`, not directly to general structure judgment.
 - After reading the routed document, check whether it directly answers the user’s purpose. If not, say what is missing and route to the next required source instead of pretending the skill contains the answer.
-- In existing codebases, do not read `greenfield.md` unless the user explicitly asks for a new structure flow.
-- Read the `brownfield.md` file when making decisions regarding existing codebases.
+- In existing codebases, read `brownfield.md` for both structure decisions and user-requested structure changes. Do not treat a request for a new directory or layer structure as greenfield work.
 - For broad existing project audits or evaluations, read `brownfield.md` first, then check only the Common Mistakes table in `best-practices.md` as a secondary checklist. Do not apply examples as templates or override project-specific rules.
 - For specific placement/import decisions or implementation work, do not read `best-practices.md` by default.

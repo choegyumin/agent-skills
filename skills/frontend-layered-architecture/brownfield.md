@@ -1,8 +1,8 @@
 # Existing Project (Brownfield) Structure Judgment
 
-Use this file for existing frontend projects when deciding layer, role, file placement, extraction, import direction, or dependency boundaries.
+Use this file for existing frontend projects when deciding or changing directory structure, layer, role, file placement, extraction, import direction, or dependency boundaries.
 
-Do not use this file to design a new project structure, write architecture documentation, or configure lint/CI enforcement. Use `greenfield.md`, `writing-docs.md`, or `enforcing-rules.md` for those purposes.
+Do not use this file to design the initial structure of a new frontend project, write architecture documentation, or configure lint/CI enforcement. Use `greenfield.md`, `writing-docs.md`, or `enforcing-rules.md` for those purposes.
 
 ## When to Stop
 
@@ -10,7 +10,7 @@ Immediately before any of the following frontend changes, stop and check roles a
 
 - Planning implementation, reviewing code, or evaluating the user’s suggestion/instruction
 - Writing new code
-- Creating, moving, or renaming files
+- Creating, removing, moving, or renaming files or directories, including changes to directory roles
 - Extracting part of an existing file
 - Adding a new import or changing an import path
 
@@ -28,14 +28,16 @@ This checkpoint does not mean you must explain structure at length. If there is 
    - If yes, treat the existing design as intentional and continue.
    - If no, read [`brownfield-guidelines.md`](./brownfield-guidelines.md) before making placement decisions.
    - Folder names, repeated placement, and existing imports are evidence, not authority. Mixed responsibilities, contradictory import directions, or absent Data boundaries indicate unstructured code.
-3. Which layer is this code closest to? End-User, Domain, Shared, or Data?
-4. What role does this code have? API, UI, business rule, utility, mapper, adapter, route orchestration, etc.
-5. Even within the same abstract layer, are there role-based dependency directions that should be disallowed?
-6. If this code is placed in a lower-level role folder, will that folder learn higher-level context?
-7. Are external data contracts and frontend-owned business rules mixed in the same file or code?
-8. Does any import, including `import type`, cross an invalid dependency direction?
-9. Is this code being placed in `components`, `hooks`, `models`, `utils`, `shared`, or a similar location only because it is reusable?
-10. If rules already exist, what placement respects those rules while avoiding worse dependency direction within the current scope?
+3. Is the user proposing or requesting that directories or directory roles be added, removed, renamed, or reorganized?
+   - If yes, read [`brownfield-guidelines.md`](./brownfield-guidelines.md) before evaluating, proposing, or applying the change, even when the existing design is intentional.
+4. Which layer is this code closest to? End-User, Domain, Shared, or Data?
+5. What role does this code have? API, UI, business rule, utility, mapper, adapter, route orchestration, etc.
+6. Even within the same abstract layer, are there role-based dependency directions that should be disallowed?
+7. If this code is placed in a lower-level role folder, will that folder learn higher-level context?
+8. Are external data contracts and frontend-owned business rules mixed in the same file or code?
+9. Does any import, including `import type`, cross an invalid dependency direction?
+10. Is this code being placed in `components`, `hooks`, `models`, `utils`, `shared`, or a similar location only because it is reusable?
+11. If rules already exist, what placement respects those rules while avoiding worse dependency direction within the current scope?
 
 ## Role Classification Criteria
 
@@ -97,6 +99,7 @@ Minimum line to hold under pressure:
 | --- | --- |
 | Project rules exist | Follow them. |
 | Existing project with intentional but undocumented structure | Preserve existing structure, but do not worsen dependency direction. |
+| User proposes or requests adding, removing, renaming, or reorganizing directories in an intentional existing structure | Read `brownfield-guidelines.md` and evaluate the requested change against the existing roles and boundaries. |
 | Existing project with no recognizable intentional design | Read `brownfield-guidelines.md` and apply its baseline rules to new and changed code. |
 | Adding a feature to an existing type-based structure | Do not scatter it flatly at the root; group it narrowly by feature namespace or prefix at minimum. |
 | A lower-level UI, utility, hook, or shared role starts reading external data or business rules | Stop and check ownership. Prefer props-based UI plus business-rule or data-access logic in an appropriate higher-level role. |
