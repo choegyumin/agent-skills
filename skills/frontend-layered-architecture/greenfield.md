@@ -32,4 +32,4 @@ Required design decisions are OpenAPI Code Generation and Data Access Entry Poin
 3. If the top-level structure and dependency direction are approved but follow-up conventions are incomplete, read [`greenfield-ask.md`](./greenfield-ask.md).
 4. If the structure, dependency direction, and follow-up conventions are approved, ask where to record the selected rules unless the user already gave a target document.
 5. If documentation writing is approved, read [`writing-docs.md`](./writing-docs.md) before writing or updating any project document.
-6. If architecture rule enforcement is requested or approved, read [`enforcing-rules.md`](./enforcing-rules.md).
+6. If architecture rule enforcement is requested or approved, or if the agent is about to add or change it, read [`enforcing-rules.md`](./enforcing-rules.md).

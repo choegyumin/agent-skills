@@ -1,6 +1,6 @@
 # Enforcing Architecture Rules
 
-Use this file when the user wants approved architecture rules enforced through ESLint, CI, import boundary checks, or similar automation.
+Use this file when the user requests architecture-rule enforcement or whenever the agent is about to add or change it through ESLint, CI, import boundary checks, or similar automation.
 
 Do not choose architecture here. Use the approved project architecture as the source of truth. If real directory roles and dependency directions are not established, return to `brownfield.md` or `greenfield.md` first.
 

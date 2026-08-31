@@ -1,6 +1,6 @@
 ---
 name: frontend-layered-architecture
-description: "Use when frontend work requires architecture-boundary judgment: code ownership, file placement, import direction, directory roles, UI/component extraction, API/data contracts, data fetching/query, URL state, mappers, schemas, hooks, stores, DTOs, architecture docs, lint/CI boundary enforcement, or small UI changes that risk leaking business rules or external data into lower-level code."
+description: "Use for frontend architecture boundaries: code ownership, directory roles, file placement, import direction, UI/component extraction, API/data contracts, fetching/query, URL state, mappers/schemas/DTOs, hooks/stores, architecture docs, and tool enforcement. Also use before agent-initiated architecture-enforcement changes in lint, CI, import-boundary checks, or similar automation—even without a user request—and for small UI changes that may leak business rules or external data into lower-level code."
 ---
 
 # Frontend Layered Architecture
@@ -61,7 +61,8 @@ Classify the user’s purpose in one sentence, then read the first matching docu
 Routing rules:
 
 - Choose the document by the user’s actual purpose, not by the first architecture keyword you notice.
-- If a request has multiple purposes, route to the purpose that controls the next user-visible action. Example: “configure ESLint from architecture rules” routes to `enforcing-rules.md`, not directly to general structure judgment.
+- If a request has multiple purposes, route to the purpose that controls the next user-visible action.
+- If the agent is about to add or change tool-based enforcement of frontend architecture rules, read `enforcing-rules.md` even when the user did not request enforcement or architecture is not the session's primary purpose.
 - After reading the routed document, check whether it directly answers the user’s purpose. If not, say what is missing and route to the next required source instead of pretending the skill contains the answer.
 - In existing codebases, read `brownfield.md` for both structure decisions and user-requested structure changes. Do not treat a request for a new directory or layer structure as greenfield work.
 - For broad existing project audits or evaluations, read `brownfield.md` first, then check only the Common Mistakes table in `best-practices.md` as a secondary checklist. Do not apply examples as templates or override project-specific rules.

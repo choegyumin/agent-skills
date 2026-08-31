@@ -22,7 +22,7 @@ Do not use this file for ordinary placement inside an intentional structure when
 2. Otherwise, apply the baseline below to new and changed code only. Do not migrate the entire codebase unless the user explicitly requests it.
 3. Preserve any existing directory that serves the Data role. If none exists, create `data/`; do not impose a fixed child-directory structure inside it.
 
-After either workflow, use `brownfield.md` for ordinary placement, extraction, and import decisions. Route documentation and tool enforcement to `writing-docs.md` and `enforcing-rules.md` when requested.
+After either workflow, use `brownfield.md` for ordinary placement, extraction, and import decisions. Route documentation requests to `writing-docs.md`. Read `enforcing-rules.md` before adding or changing tool enforcement, whether requested by the user or chosen by the agent.
 
 ## Baseline Directory Structure
 
