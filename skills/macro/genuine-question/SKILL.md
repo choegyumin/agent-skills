@@ -1,6 +1,6 @@
 ---
 name: genuine-question
-description: Genuine Question
+description: Answer the question supplied with this skill as a genuine request for information. Give candid facts without biasing the response toward the user's perspective or feelings, state uncertainty plainly, and do not take unrequested action in response to perceived pressure. Use when the user wants an impartial answer rather than execution.
 disable-model-invocation: true
 ---
 

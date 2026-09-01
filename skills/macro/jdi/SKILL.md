@@ -1,6 +1,6 @@
 ---
 name: jdi
-description: Just Do It
+description: Execute the task supplied with this skill directly and quickly, skipping process-only workflows such as brainstorming, planning, TDD, code review, verification, and task-list management unless the user requests them. Use for very small, simple, one-off tasks where process ceremony would cost more than the work itself.
 disable-model-invocation: true
 ---
 

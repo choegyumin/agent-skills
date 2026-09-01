@@ -1,6 +1,6 @@
 ---
 name: shh
-description: "keep-it-down"
+description: "Keep it down — use terse, clear, and action-first responses for the rest of the session. Remove filler and tangents, preserve technical precision, track multi-step progress, and end with one concrete next action. Use when the user wants compact communication; disable with `stop ssh` or `normal mode`."
 disable-model-invocation: true
 ---
 
