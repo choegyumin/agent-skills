@@ -1,0 +1,4 @@
+interface:
+  display_name: "Component Managing State"
+policy:
+  allow_implicit_invocation: true
