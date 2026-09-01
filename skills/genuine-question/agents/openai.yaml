@@ -1,4 +1,4 @@
 interface:
-  display_name: "Question"
+  display_name: "Genuine Question"
 policy:
   allow_implicit_invocation: false

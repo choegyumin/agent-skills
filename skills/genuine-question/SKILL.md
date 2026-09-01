@@ -1,6 +1,6 @@
 ---
-name: q
-description: Question
+name: genuine-question
+description: Genuine Question
 disable-model-invocation: true
 ---
 
