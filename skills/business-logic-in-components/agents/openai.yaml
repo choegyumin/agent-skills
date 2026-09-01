@@ -1,0 +1,4 @@
+interface:
+  display_name: "Business Logic in Components"
+policy:
+  allow_implicit_invocation: true
