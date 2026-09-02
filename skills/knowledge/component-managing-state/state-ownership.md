@@ -164,7 +164,7 @@ First identify the UI unit from the UI design, then choose the root of its corre
 
 ## References
 
-Do not open these references by default. Read only the single relevant document when:
+Do not open these references by default. Read only relevant documents when:
 
 - The user asks for official evidence, sources, or quotations.
 - A framework-specific behavior or edge case that this guide does not resolve directly affects the current decision.

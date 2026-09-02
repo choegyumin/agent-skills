@@ -75,7 +75,7 @@ test("buyer can review applicable delivery charges before checkout", async () =>
 
 ## References
 
-Do not open these references by default. When the user asks for official evidence, sources, or quotations, read only one relevant document.
+Do not open these references by default. When the user asks for official evidence, sources, or quotations, read only relevant documents.
 
 - [User Journey Test — martinfowler.com](https://martinfowler.com/bliki/UserJourneyTest.html)
 - [Story Test — martinfowler.com](https://martinfowler.com/bliki/StoryTest.html)
