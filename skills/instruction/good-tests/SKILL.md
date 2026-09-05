@@ -1,6 +1,6 @@
 ---
 name: good-tests
-description: Use whenever designing, writing, modifying, or reviewing tests; choosing what or where to test; using TDD, BDD, ATDD, or red-green-refactor; creating or reviewing User Journey Tests; or making decisions about mocks and other test doubles. Keeps unit, component, integration, E2E, acceptance, regression, and contract tests focused on observable behavior through public seams so they survive refactors.
+description: Use whenever designing, writing, modifying, or reviewing tests; choosing what or where to test; using TDD, BDD, ATDD, or red-green-refactor; creating or reviewing User Journey Tests; or making decisions about mocks and other test doubles. Keeps tests focused on observable behavior through public seams so they survive refactors. Do not use when only running existing tests or reporting their results.
 ---
 
 # Good Tests
