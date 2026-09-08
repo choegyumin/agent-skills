@@ -5,8 +5,9 @@
 Do not colocate User Journey Tests with implementation files. Keep them in a dedicated directory. Use the first applicable location in this list and do not consider the later options:
 
 1. If the project or test tool has a dedicated directory convention suitable for User Journey Tests, use it. For example, Cucumber uses `features/` and Cypress uses `cypress/e2e/`.
-2. If there is no dedicated convention but the project has a shared test root, use `journeys/` beneath it, such as `tests/journeys/`.
-3. If neither exists, use a top-level `journeys/` directory.
+2. If a top-level `specs/` directory is not used for another purpose, use it.
+3. If the project has a shared test root, use `journeys/` beneath it, such as `tests/journeys/`.
+4. Use a top-level `journeys/` directory.
 
 Within that directory, organize tests by user goals and journeys, not by implementation modules or technical layers.
 
