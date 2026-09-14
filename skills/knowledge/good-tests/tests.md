@@ -28,10 +28,6 @@ Characteristics:
 
 ## Bad Tests
 
-### Horizontal slicing
-
-Writing all tests first, then all implementation. Bulk tests verify _imagined_ behavior: they test the _shape_ of things rather than user-facing behavior, become insensitive to real changes, and commit to a test structure before the implementation is understood. Work in **vertical slices** instead: one test → one implementation → repeat. Each test is a **tracer bullet** that responds to what the previous cycle taught you.
-
 ### Mechanical regression tests
 
 Continuing to assert behavior that a requirement change intentionally modified or removed. Update or delete those tests to match the new expected behavior. Write a regression test only when fixing a defect to prevent that defect from recurring.

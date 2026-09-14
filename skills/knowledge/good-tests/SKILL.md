@@ -1,11 +1,11 @@
 ---
 name: good-tests
-description: Use whenever designing, writing, modifying, or reviewing tests; choosing what or where to test; using TDD, BDD, ATDD, or red-green-refactor; creating or reviewing User Journey Tests; or making decisions about mocks and other test doubles. Keeps tests focused on observable behavior through public seams so they survive refactors. Do not use when only running existing tests or reporting their results.
+description: Use whenever designing, writing, modifying, or reviewing tests; choosing what or where to test; creating or reviewing User Journey Tests; or making decisions about mocks and other test doubles. Keeps tests focused on observable behavior through public seams so they survive refactors. Do not use when only running existing tests or reporting their results.
 ---
 
 # Good Tests
 
-This skill is the reference for creating tests worth keeping: what a good test is, where tests go, the anti-patterns, and the rules of the loop. It does not require a loop or cycle such as TDD. When the work has a loop, apply these instructions before and during it, not after.
+This skill is the reference for creating tests worth keeping: what a good test is, where tests go, and which anti-patterns to avoid.
 
 ## Required terminology
 
@@ -20,14 +20,6 @@ A **seam** is the public boundary you test at: the interface where you observe b
 Ask: "What's the public interface, and which seams should we test?"
 
 When the shape of that interface is itself in question, address the interface design before writing tests. Use the existing code and ADRs to identify the public interface and candidate seams, explain the trade-offs of each candidate, and agree on them with the user.
-
-## TDD loop
-
-When following TDD (Test-Driven Development), use these principles. BDD (Behavior-Driven Development), ATDD (Acceptance Test-Driven Development), and related test-first methods follow the same principles.
-
-- **Red before green.** Write and run the failing test first. Confirm that it fails for the expected reason because the intended behavior does not exist yet. If it already passes, check whether the behavior already exists and whether the chosen seam, inputs, preconditions, and expected result are correct.
-- **One slice at a time.** One seam, one test, one minimal implementation per cycle. Move to the next slice only after the test passes. Do not anticipate future tests or add speculative features.
-- **Green is not always followed immediately by refactoring.** Finish the implementation through repeated red-green cycles, then refactor during the review stage. Read red-green-refactor as red-green-red-...-green-refactor, not mechanically as refactoring after every green.
 
 ## Reference router
 
