@@ -1,6 +1,6 @@
 ---
 name: agentic-tdd
-description: Use whenever implementing changes with TDD, BDD, ATDD, or related test-first workflows. Guides refactoring timing and the final test-cleanup pass.
+description: Use whenever implementing changes with red-green-refactor, TDD, BDD, ATDD, or related test-first workflows. Guides refactoring timing and the final test-cleanup pass.
 ---
 
 # Agentic TDD: Red, Green, Refactor, Tidy

@@ -1,6 +1,6 @@
 ---
 name: tidy-tests
-description: Use after implementation or refactoring to tidy up tests left behind. Removes temporary and duplicate tests, temporary test execution controls introduced during the work, and orphaned test resources. Do not use for general test quality reviews, writing tests for new features, adding missing tests, or merely running tests. Do not apply mechanically during implementation just because the work follows TDD; use only when the user asks or an explicit test-tidying phase begins.
+description: Use after implementation or refactoring, or during test-quality review, to tidy up tests left behind. Removes temporary or duplicate tests, restores `.only` or `.skip`, or cleans orphaned test resources; not for merely adding tests or running tests. Do not apply mechanically during implementation just because the work follows TDD; use only when the user asks for test-tidying or an explicit test-tidying phase begins.
 ---
 
 # Tidy Tests
