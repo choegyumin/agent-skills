@@ -28,10 +28,6 @@ Characteristics:
 
 ## Bad Tests
 
-### Mechanical regression tests
-
-Continuing to assert behavior that a requirement change intentionally modified or removed. Update or delete those tests to match the new expected behavior. Write a regression test only when fixing a defect to prevent that defect from recurring.
-
 ### Implementation-detail tests
 
 Mocking internal collaborators, testing private methods, or verifying through a side channel couples tests to internal structure. Querying the database instead of using the interface is one example. The tell: the test breaks when you refactor but behavior has not changed.
