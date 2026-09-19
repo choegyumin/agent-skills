@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orca Handoff"
+policy:
+  allow_implicit_invocation: true
