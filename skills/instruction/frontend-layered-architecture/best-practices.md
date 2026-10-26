@@ -13,7 +13,7 @@ The names below are examples for understanding roles. Do not rename or reshape a
 | `pages` | Screen-level UI orchestration | End-User |
 | `widgets` | Standalone feature UI orchestration | End-User |
 | `parts` | Domain-aware UI presentation | Domain |
-| `entities` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain |
+| `entities` | Reusable business rules, similar to Clean Architecture Entities | Domain |
 | `ui` | General-purpose UI presentation | Shared |
 | `utils` | General-purpose utility logic | Shared |
 | `data` | External data boundary for API endpoints, schemas, and Query/Mutation Options | Data |

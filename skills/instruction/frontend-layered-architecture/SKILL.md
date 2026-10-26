@@ -30,7 +30,7 @@ flowchart TB
 | Layer | Meaning |
 | --- | --- |
 | End-User | Screens delivered to users. The highest-level layer, such as pages and routes, where UI flow, data fetching, and orchestration are handled. |
-| Domain | Reusable business rules, validation, calculations, and feature flags, similar to Clean Architecture Entities and Use Cases. In the baseline architecture recommended by this skill, Domain excludes API calls and external service access. |
+| Domain | Reusable business rules, validation, calculations, and feature flags, similar to Clean Architecture Entities. In the baseline architecture recommended by this skill, Domain excludes API calls and external service access. |
 | Shared | Pure code that knows no external context. This is the lowest-level layer. |
 | Data | External data contracts and execution boundaries. API-related source code belongs here and is treated like frontend-consumed externally-owned code, even when frontend developers wrote it. |
 

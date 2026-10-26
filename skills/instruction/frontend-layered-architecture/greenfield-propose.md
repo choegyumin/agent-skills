@@ -6,6 +6,10 @@ This step interprets the collected answers, proposes the top-level directory str
 
 ## Baseline Directory Structure
 
+This structure deliberately uses FSD layer names familiar to frontend engineers, and the roles have some similarities. However, it defines dependency rules not only by layer, but also by responsibilities such as UI presentation, domain rule management, and external data access.
+
+The `features` layer is omitted because its name and role are ambiguous. In Feature-Sliced Design (FSD), `features` is the primary layer for use cases. However, it allows even small components to take on broad dependencies, including external data access, which can encourage developers to design components without fully considering their responsibilities and dependency scope. As these components accumulate, their side effects become harder to control. This structure therefore separates domain-aware UI presentation into `parts`, with restricted dependencies. Feature-level UI that includes data access and orchestration is consolidated into `widgets` or kept in `pages` without being extracted. Omitting FSD's `features` layer does not restrict feature-based folder organization, including feature-first structures.
+
 The structure below is the maximum structure when OpenAPI code generation is not used and all optional directories are selected. Depending on the selected options, `data/*` directories may be omitted.
 
 ```txt
@@ -40,7 +44,7 @@ Apply selected options before presenting the final proposal:
 | `pages` | Screen-level UI orchestration | End-User | Page/route-level components. They handle UI flow, data fetching, and orchestration. As the direct layer delivered to users, they may have every type of dependency. |
 | `widgets` | Standalone feature UI orchestration | End-User | Independently functioning components. They may directly depend on most external data and state such as APIs and stores. Direct dependency on URL state or routes is allowed but not recommended. Examples: `<NewArrivalsSection shopId={shopId} />`, `<AuthorizationDialog onComplete={onComplete} />`. |
 | `parts` | Domain-aware UI presentation | Domain | The lowest-level components that express domain language as UI. They understand business requirements or context but do not depend on external services, so direct access to external data or state such as API calls, queries, routers, and stores is not allowed. Example: `<ProductCard name={product.name} />`. |
-| `entities` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain | Reusable business rules, validation, calculations, and feature flags. In this baseline, they exclude API calls and external service access. Compose `entities` from pure functions, modules, types, and constants. Examples: `canBuyProduct(product)`, `isBetaEnabled(user)`. |
+| `entities` | Reusable business rules, similar to Clean Architecture Entities | Domain | Reusable business rules, validation, calculations, and feature flags. In this baseline, they exclude API calls and external service access. Compose `entities` from pure functions, modules, types, and constants. Examples: `canBuyProduct(product)`, `isBetaEnabled(user)`. |
 | `ui` | General-purpose UI presentation | Shared | Pure general-purpose UI components similar to a design system. Examples: `<Button />`, `<Switch />`. |
 | `utils` | General-purpose utility logic | Shared | General-purpose utilities and wrappers that receive application-specific state, policy, and actions through parameters. |
 | `data` | Data | Data | External data contracts and access boundary. |
@@ -52,7 +56,7 @@ Apply selected options before presenting the final proposal:
 Notes:
 
 - Think again before adding `widgets`. Most code is sufficiently handled by inlining it in `pages` or abstracting it into `parts` or `ui`. Do not add `widgets` merely to reduce the amount of code needed for reuse.
-- `entities` is the layer that best reveals real-world business requirements. It is closest to Clean Architecture Entities and Use Cases in this structure, but this baseline keeps it out of rendering and external service execution. Delegate rendering to `parts`, and compose `entities` from pure functions, modules, types, and constants.
+- `entities` is the layer that best reveals real-world business requirements. It is closest to Clean Architecture Entities in this structure, but this baseline keeps it out of rendering and external service execution. Delegate rendering to `parts`, and compose `entities` from pure functions, modules, types, and constants.
 - `data/adapters` and `data/contracts` adjust interfaces so external API changes do not propagate directly to the End-User/Domain layers, and they do not enforce a specific code pattern such as Repository Classes.
 - Treat Data as external contract code consumed by the frontend. It may live inside the repository or be written by frontend developers; that does not change its Data role. For example, OpenAPI-generated clients/schemas and manually written endpoint/schema modules can both be Data.
 

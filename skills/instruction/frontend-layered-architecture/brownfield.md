@@ -51,7 +51,7 @@ Configuration files, assets, and other project setup files are not frontend laye
 | --- | --- | --- |
 | Page UI, route configuration, URL state subscription, navigation control | Screen-level UI orchestration | End-User |
 | Independently functioning feature UI, such as `<NewArrivalsSection shopId={shopId} />` or `<AuthorizationDialog onComplete={onComplete} />` | Standalone feature UI orchestration | End-User |
-| Business rules, validation, calculations, and feature flags, such as `canBuyProduct(product)` or `isBetaEnabled(user)` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain |
+| Business rules, validation, calculations, and feature flags, such as `canBuyProduct(product)` or `isBetaEnabled(user)` | Reusable business rules, similar to Clean Architecture Entities | Domain |
 | Components that render UI only from props but directly express business requirements in code | Domain-aware UI presentation | Domain |
 | Components that render UI only from props and do not directly read external data | General-purpose UI presentation | Shared |
 | Utility modules and general-purpose wrappers whose application-specific state, policy, and actions are injected | General-purpose utility logic | Shared |

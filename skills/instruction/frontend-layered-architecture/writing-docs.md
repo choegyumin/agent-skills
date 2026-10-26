@@ -44,7 +44,7 @@ src/
   widgets/      # Standalone feature UI orchestration
 
   parts/        # Domain-aware UI presentation
-  entities/     # Reusable business rules, similar to Clean Architecture entities/use-cases
+  entities/     # Reusable business rules, similar to Clean Architecture entities
 
   ui/           # General-purpose UI presentation
   utils/        # General-purpose utility logic
