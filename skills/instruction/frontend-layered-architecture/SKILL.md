@@ -19,6 +19,8 @@ In an existing project, treat architecture as intentional only when it is docume
 
 If the project already uses layer terminology, prefer the project’s terms. Use the terms below only when there is no existing terminology, or when explaining structure. These abstract layer names are not default directory names; do not convert End-User, Domain, Shared, or Data into folders unless the user explicitly selected those names.
 
+The abstract layer classifications and dependency directions in this skill apply only to frontend and do not apply as-is to API servers or other applications. The diagram and rules below describe the default structure without project-specific exceptions. For example, if a server and client share Entities code directly in a monorepo rather than having the client consume server-generated schemas, Domain can be placed below Data so that Data references Entities in Domain.
+
 ```mermaid
 flowchart TB
   End-User --> Domain
