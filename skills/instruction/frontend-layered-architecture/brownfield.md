@@ -79,7 +79,7 @@ Follow the existing structure and import conventions first when the existing des
 Stop and reconsider placement and dependency direction when you see bad signals:
 
 - Type-based folders such as `components`, `hooks`, `models`, or `utils` contain “everything except pages.”
-- A feature namespace such as `features/<slug>` contains its page flow, API execution, business rules, store, and reusable UI without dependency boundaries between those roles.
+- A feature namespace such as `entities/<slug>` contains its page flow, API execution, business rules, store, and reusable UI without dependency boundaries between those roles.
 - Files are grouped only by route or screen, with API contracts, business rules, orchestration, and presentation kept together in each screen folder.
 - A generic `shared/` or `common/` directory acts as a dumping ground for unrelated API clients, stores, business rules, hooks, and UI.
 - Business rules, API contracts, URL state, or query logic are placed where the code looks shared.

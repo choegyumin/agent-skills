@@ -44,7 +44,7 @@ src/
   widgets/      # Standalone feature UI orchestration
 
   parts/        # Domain-aware UI presentation
-  features/     # Reusable business rules, similar to Clean Architecture entities/use-cases
+  entities/     # Reusable business rules, similar to Clean Architecture entities/use-cases
 
   ui/           # General-purpose UI presentation
   utils/        # General-purpose utility logic
@@ -70,8 +70,8 @@ flowchart TB
   subgraph Domain
     direction TB
     parts[parts]
-    features[features]
-    parts --> features
+    entities[entities]
+    parts --> entities
   end
 
   subgraph Shared
@@ -101,9 +101,9 @@ flowchart TB
 
 - The default import direction is `End-User -> Domain -> Shared`; `Data` follows separate rules. Reverse imports are forbidden.
 - `Data` is treated as external data contracts consumed by the frontend, even when the code is written inside the frontend codebase. `Data` may depend on other layers only in limited, project-approved ways.
-- Import permission also depends on directory roles. For example, `features` may import `ui` only for approved non-rendering dependencies such as types or data transformation; it must not render JSX or import UI components or hooks.
+- Import permission also depends on directory roles. For example, `entities` may import `ui` only for approved non-rendering dependencies such as types or data transformation; it must not render JSX or import UI components or hooks.
 - `pages` and `widgets` may use Data layer execution code.
-- `parts` and `features` may use only Data layer schema/type code.
+- `parts` and `entities` may use only Data layer schema/type code.
 ````
 
 Add code convention sections only for rules the user actually decided.

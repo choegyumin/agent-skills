@@ -13,7 +13,7 @@ The names below are examples for understanding roles. Do not rename or reshape a
 | `pages` | Screen-level UI orchestration | End-User |
 | `widgets` | Standalone feature UI orchestration | End-User |
 | `parts` | Domain-aware UI presentation | Domain |
-| `features` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain |
+| `entities` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain |
 | `ui` | General-purpose UI presentation | Shared |
 | `utils` | General-purpose utility logic | Shared |
 | `data` | External data boundary for API endpoints, schemas, and Query/Mutation Options | Data |
@@ -77,7 +77,7 @@ Why it is bad:
 Safer approach:
 
 ```tsx
-// features/canBuyProduct.ts (Domain)
+// entities/canBuyProduct.ts (Domain)
 function canBuyProduct(product: ProductSummary) {
   return product.status === "ACTIVE" && product.stock > 0;
 }
@@ -143,7 +143,7 @@ function ProductCard({ soldout }: { soldout: boolean }) {
 If you want to reduce duplication:
 
 ```tsx
-// features/toProductCardProps.ts (Domain)
+// entities/toProductCardProps.ts (Domain)
 function toProductCardPropsFromProductDetail(product: ProductDetail) {
   return { soldout: product.stock < 0 };
 }

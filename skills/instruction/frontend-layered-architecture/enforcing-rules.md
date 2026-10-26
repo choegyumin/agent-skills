@@ -43,26 +43,26 @@ const boundaryLayers = [
     type: "end-user:page",
     pattern: "src/pages",
     relationships: ["internal"],
-    dependencies: ["end-user:widget", "domain:part", "domain:feature", "shared:ui", "shared:util", "data:adapter", "data:endpoint", "data:contract", "data:schema"],
+    dependencies: ["end-user:widget", "domain:part", "domain:entity", "shared:ui", "shared:util", "data:adapter", "data:endpoint", "data:contract", "data:schema"],
   },
   {
     kind: "element",
     type: "end-user:widget",
     pattern: "src/widgets",
     relationships: ["internal", "sibling"],
-    dependencies: ["domain:part", "domain:feature", "shared:ui", "shared:util", "data:adapter", "data:endpoint", "data:contract", "data:schema"],
+    dependencies: ["domain:part", "domain:entity", "shared:ui", "shared:util", "data:adapter", "data:endpoint", "data:contract", "data:schema"],
   },
   {
     kind: "element",
     type: "domain:part",
     pattern: "src/parts",
     relationships: ["internal", "sibling"],
-    dependencies: ["domain:feature", "shared:ui", "shared:util", "data:contract", "data:schema"],
+    dependencies: ["domain:entity", "shared:ui", "shared:util", "data:contract", "data:schema"],
   },
   {
     kind: "element",
-    type: "domain:feature",
-    pattern: "src/features",
+    type: "domain:entity",
+    pattern: "src/entities",
     relationships: ["internal", "sibling"],
     dependencies: ["shared:ui", "shared:util", "data:contract", "data:schema"],
   },
@@ -174,7 +174,7 @@ export default [
 
 ## Adaptation Rules
 
-- Map each approved role to `<abstract-layer>:<project-role>`, such as `domain:feature`, and keep its `kind`, pattern, allowed dependency types, and namespace relationships in one boundary entry.
+- Map each approved role to `<abstract-layer>:<project-role>`, such as `domain:entity`, and keep its `kind`, pattern, allowed dependency types, and namespace relationships in one boundary entry.
 - For element entries, use `path.join(pattern, "*")` to create child namespace elements and `path.join(pattern, "**")` to supply their shared parent. Keep `"boundaries/elements-single-match": false` so both descriptors participate in the element hierarchy.
 - For file entries, use the exact pattern in `boundaries/files`; do not append element wildcards. Source and target permissions use file categories instead of element types.
 - Use `relationships: ["internal"]` when only imports within the same namespace are allowed, or add `"sibling"` when namespaces of the same role may import each other. Internal imports are checked only when at least one element boundary omits `"internal"`. The shared-parent descriptor also classifies files directly under the pattern as one directory-level element.

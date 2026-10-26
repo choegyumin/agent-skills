@@ -34,7 +34,7 @@ src/
   widgets/
 
   parts/
-  features/
+  entities/
 
   ui/
   utils/
@@ -56,7 +56,7 @@ Apply project decisions before using the structure:
 | `pages` | Screen-level UI orchestration | End-User | Page/route-level components. They handle UI flow, data fetching, and orchestration. As the direct layer delivered to users, they may have every type of dependency. |
 | `widgets` | Standalone feature UI orchestration | End-User | Independently functioning components. They may directly depend on most external data and state such as APIs and stores. Direct dependency on URL state or routes is allowed but not recommended. Examples: `<NewArrivalsSection shopId={shopId} />`, `<AuthorizationDialog onComplete={onComplete} />`. |
 | `parts` | Domain-aware UI presentation | Domain | The lowest-level components that express domain language as UI. They understand business requirements or context but do not depend on external services, so direct access to external data or state such as API calls, queries, routers, and stores is not allowed. Example: `<ProductCard name={product.name} />`. |
-| `features` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain | Reusable business rules, validation, calculations, and feature flags. In this baseline, they exclude API calls and external service access. Compose `features` from pure functions, modules, types, and constants. Examples: `canBuyProduct(product)`, `isBetaEnabled(user)`. |
+| `entities` | Reusable business rules, similar to Clean Architecture Entities and Use Cases | Domain | Reusable business rules, validation, calculations, and feature flags. In this baseline, they exclude API calls and external service access. Compose `entities` from pure functions, modules, types, and constants. Examples: `canBuyProduct(product)`, `isBetaEnabled(user)`. |
 | `ui` | General-purpose UI presentation | Shared | Pure general-purpose UI components similar to a design system. Examples: `<Button />`, `<Switch />`. |
 | `utils` | General-purpose utility logic | Shared | General-purpose utilities and wrappers that receive application-specific state, policy, and actions through parameters. |
 | `data` | External data contracts and access boundary | Data | Data-role directory selected from the existing project structure; its child roles are organized according to project needs. |
@@ -64,21 +64,21 @@ Apply project decisions before using the structure:
 Notes:
 
 - Think again before adding `widgets`. Most code is sufficiently handled by inlining it in `pages` or abstracting it into `parts` or `ui`. Do not add `widgets` merely to reduce the amount of code needed for reuse.
-- `features` is the layer that best reveals real-world business requirements. It is closest to Clean Architecture Entities and Use Cases in this structure, but this baseline keeps it out of rendering and external service execution. Delegate rendering to `parts`, and compose `features` from pure functions, modules, types, and constants.
+- `entities` is the layer that best reveals real-world business requirements. It is closest to Clean Architecture Entities and Use Cases in this structure, but this baseline keeps it out of rendering and external service execution. Delegate rendering to `parts`, and compose `entities` from pure functions, modules, types, and constants.
 - Treat Data as external contract code consumed by the frontend. It may live inside the repository or be written by frontend developers; that does not change its Data role.
 
 ## Dependency Rules
 
-Except for the Data layer, the default import direction is `pages -> widgets -> parts -> features -> ui -> utils`. Reverse imports are forbidden.
+Except for the Data layer, the default import direction is `pages -> widgets -> parts -> entities -> ui -> utils`. Reverse imports are forbidden.
 
 Rules:
 
 - Within the Data layer, keep external contracts and execution boundaries separate from End-User and Domain responsibilities, using project-appropriate child roles.
 - When `pages` and `widgets` access files in the same layer, they are limited to internal private modules. For example, a product list page must not import a product detail page.
 - `pages` and `widgets` may access all Data layer code.
-- Under this default, `parts` and `features` may access only Data layer schema/type code and must not access Data layer execution code.
+- Under this default, `parts` and `entities` may access only Data layer schema/type code and must not access Data layer execution code.
 - `ui` and `utils` must not depend on business rules, routing, stores, query client libraries, API schemas, or API execution code.
-- When `features -> ui` is used, rendering JSX or importing components/hooks is forbidden. This dependency should mainly be used for types or data transformation.
+- When `entities -> ui` is used, rendering JSX or importing components/hooks is forbidden. This dependency should mainly be used for types or data transformation.
 
 ## Placement Reference
 
@@ -90,11 +90,11 @@ Rules:
 | `toAvatarPropsFromUser(user)` | `parts/` | Maps domain-accessible data into a reusable UI presentation model |
 | `<Button onClick={handleClick} />` | `ui/` |  |
 | `toDisplayDate(date)` | `ui/` | Formatting depends on design-system display rules |
-| `canBuyProduct(product)` | `features/` |  |
+| `canBuyProduct(product)` | `entities/` |  |
 | `isNullableOrEmpty(value)` | `utils/` |  |
 | `getProductsAPI(payload)` | Data-role directory (fallback: `data/**/*`) | API request execution |
 | `productsQueryOptions(payload)` | Data-role directory (fallback: `data/**/*`) | Declare alongside the regular function it uses. |
-| `toProductFromProductDTO(dto)` | Data-role directory (fallback: `data/**/*`) or `features/` | Keep external DTO adaptation in Data; keep Domain models and business rules in `features/`. |
+| `toProductFromProductDTO(dto)` | Data-role directory (fallback: `data/**/*`) or `entities/` | Keep external DTO adaptation in Data; keep Domain models and business rules in `entities/`. |
 
 ## Response
 
