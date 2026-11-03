@@ -59,9 +59,11 @@ A single component implementation may span multiple files. A controller or prese
 
 Do not treat Lifting State Up only as a later refactoring technique. When ownership is visible in the requirements, place state correctly during the first implementation.
 
-The following Wizard renders multiple Steps under a single `/onboarding/:step` dynamic route. The Steps cannot render independently outside the Wizard. The Wizard owns the route parameter and the transition rules between Steps.
+A Wizard UI (multi-step form UI) is a common but tricky case. Regardless of the route structure, each Step occupies the whole page (or a specific section) and only one Step is visible at a time, so each Step is a visually complete UI unit and the root of its own component set. The Step owns its in-progress form values and validation, along with the request that completes it and that request's pending and error state. A Step cannot stand on its own, however, so the Wizard groups the Steps and coordinates only the transitions between them and the confirmed values shared across Steps. This placement comes from identifying UI units first, not from putting state in the nearest consumer. Do not push all of the logic down into the Steps, and do not lift all of the state up into the Wizard.
 
-### Incorrect
+The following Wizard renders multiple Steps under a single `/onboarding/:step` dynamic route.
+
+### Incorrect: A Step Owns the Transition Rules
 
 ```tsx
 function OnboardingWizardPage() {
@@ -99,23 +101,57 @@ function ProfileStep() {
 
 Each Step depends directly on the router and route paths, spreading the Wizard's navigation flow across descendant components.
 
+### Incorrect: The Wizard Owns a Step's Form and Request
+
+```tsx
+function OnboardingWizardPage() {
+  const { params: { step }, navigate } = useRouter();
+  const [email, setEmail] = useState("");
+  const checkEmail = useMutation(checkEmailAvailabilityMutationOptions());
+
+  if (step === "account") {
+    return (
+      <AccountStep
+        email={email}
+        invalid={!email.includes("@")}
+        pending={checkEmail.isPending}
+        error={checkEmail.error}
+        onEmailChange={setEmail}
+        onNext={() => checkEmail.mutate({ email }, { onSuccess: () => navigate("/onboarding/profile") })}
+      />
+    );
+  }
+
+  // ...
+}
+```
+
+`AccountStep` is a complete UI unit that looks like a page, but the email input, its validation, and the email-availability check it should own have been lifted into the Wizard. This state does not coordinate any other Step, yet every keystroke updates Wizard state, so unvalidated, unsubmitted values leak into the data other Steps rely on. If the user comes back to edit the email and then abandons the change, the Wizard's email no longer matches the email that was checked and that later Steps rely on. As Steps are added, the Wizard absorbs every Step's form and request, and each Step becomes a shell that only renders values.
+
 ### Correct
 
 ```tsx
 function OnboardingWizardPage() {
   const { params: { step }, navigate } = useRouter();
+  // The Wizard owns only the confirmed values shared across Steps.
+  const [account, setAccount] = useState();
 
   if (step === "account") {
     return (
       <AccountStep
-        onNext={() => navigate("/onboarding/profile")}
+        initialEmail={account?.email}
+        onNext={(confirmed) => {
+          setAccount(confirmed);
+          navigate("/onboarding/profile");
+        }}
       />
     );
   }
 
-  if (step === "profile") {
+  if (step === "profile" && account) {
     return (
       <ProfileStep
+        account={account}
         onBack={() => navigate("/onboarding/account")}
         onComplete={() => navigate("/onboarding/complete")}
       />
@@ -125,16 +161,27 @@ function OnboardingWizardPage() {
   return "ERROR";
 }
 
-function AccountStep({ onNext }) {
+function AccountStep({ initialEmail = "", onNext }) {
+  // This Step owns its in-progress values, their validation, and the request that completes it.
+  const [email, setEmail] = useState(initialEmail);
+  const checkEmail = useMutation(checkEmailAvailabilityMutationOptions());
+  const invalid = !email.includes("@");
+
   return (
-    <>
-      {/* ... */}
-      <button onClick={onNext}>Next</button>
-    </>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        checkEmail.mutate({ email }, { onSuccess: () => onNext({ email }) });
+      }}
+    >
+      <input value={email} onChange={(event) => setEmail(event.target.value)} />
+      {checkEmail.error && <p role="alert">{/* ... */}</p>}
+      <button disabled={invalid || checkEmail.isPending}>Next</button>
+    </form>
   );
 }
 
-function ProfileStep({ onBack, onComplete }) {
+function ProfileStep({ account, onBack, onComplete }) {
   return (
     <>
       {/* ... */}
@@ -145,7 +192,9 @@ function ProfileStep({ onBack, onComplete }) {
 }
 ```
 
-`OnboardingWizardPage` interprets the route parameter and owns the transition rules. Each Step reports user intent through callbacks without knowing the route structure.
+`OnboardingWizardPage` interprets the route parameter and owns the transition rules and the confirmed values shared across Steps. Each Step, as the root of its own UI unit, handles its form and request directly and reports only the result through a callback. It knows neither the route structure nor the other Steps. When the user navigates back, the Step receives the confirmed value stored in the Wizard as its initial value and restores the input.
+
+If the user instead fills in sections that are all visible on one screen and submits once at the end, those sections are not complete UI units, even when a progress indicator is shown. In that case, the root of the whole form owns the field values, validation, and submission. Decide by whether each step is a visually complete UI unit, not by whether it is called a "step."
 
 ## Repair Existing Ownership
 
@@ -173,3 +222,4 @@ Read only references relevant to the current framework and decision.
 
 - [Sharing State Between Components](https://react.dev/learn/sharing-state-between-components)
 - [Thinking in React — Step 4: Identify where your state should live](https://react.dev/learn/thinking-in-react#step-4-identify-where-your-state-should-live)
+므
